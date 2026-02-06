@@ -137,7 +137,7 @@ const Footer = () => {
             sx={{ textAlign: { xs: "center", md: "left" } }}
           >
             <Typography fontSize={14}>
-              © 2026 Qari Khajoor Center. All Rights Reserved.
+              © 2026 Qari Khajoor Centre. All Rights Reserved.
             </Typography>
           </Grid>
 

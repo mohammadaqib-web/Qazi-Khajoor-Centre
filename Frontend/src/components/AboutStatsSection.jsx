@@ -53,7 +53,7 @@ const AboutStatsSection = () => {
                 mb: 0.5,
               }}
             >
-              QARI KHAJOOR CENTER
+              QARI KHAJOOR CENTRE
             </Typography>
 
             <Divider
