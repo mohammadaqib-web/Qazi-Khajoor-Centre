@@ -101,18 +101,13 @@ const Navbar = () => {
               <Box
                 sx={{
                   borderRadius: 1,
-                  backgroundColor: isProductsActive
-                    ? "#D4A373"
-                    : "transparent",
+                  backgroundColor: isProductsActive ? "#D4A373" : "transparent",
                 }}
               >
                 <ProductsMegaMenu />
               </Box>
 
-              <NavButton
-                to="/beirut-delights"
-                label="BEIRUT DELIGHTS"
-              />
+              <NavButton to="/beirut-delights" label="BEIRUT DELIGHTS" />
               <NavButton to="/contact" label="CONTACT" />
             </Box>
           )}
@@ -148,7 +143,10 @@ const Navbar = () => {
               component={NavLink}
               to="/"
               end
-              sx={{ "&.active": { backgroundColor: "#D4A373" }, color: "#3B2416" }}
+              sx={{
+                "&.active": { backgroundColor: "#D4A373" },
+                color: "#3B2416",
+              }}
             >
               <ListItemText primary="HOME" />
             </ListItem>
@@ -156,7 +154,10 @@ const Navbar = () => {
             <ListItem
               component={NavLink}
               to="/about"
-              sx={{ "&.active": { backgroundColor: "#D4A373" }, color: "#3B2416" }}
+              sx={{
+                "&.active": { backgroundColor: "#D4A373" },
+                color: "#3B2416",
+              }}
             >
               <ListItemText primary="ABOUT US" />
             </ListItem>
@@ -164,9 +165,7 @@ const Navbar = () => {
             {/* PRODUCTS */}
             {productsMenuData.map((col) => (
               <Box key={col.title} mb={1}>
-                <Typography fontWeight={600}>
-                  {col.title}
-                </Typography>
+                <Typography fontWeight={600}>{col.title}</Typography>
                 {col.items.map((item) => (
                   <ListItem key={item} sx={{ pl: 2 }}>
                     <ListItemText primary={item} />
@@ -178,7 +177,10 @@ const Navbar = () => {
             <ListItem
               component={NavLink}
               to="/contact"
-              sx={{ "&.active": { backgroundColor: "#D4A373" }, color: "#3B2416" }}
+              sx={{
+                "&.active": { backgroundColor: "#D4A373" },
+                color: "#3B2416",
+              }}
             >
               <ListItemText primary="CONTACT" />
             </ListItem>
