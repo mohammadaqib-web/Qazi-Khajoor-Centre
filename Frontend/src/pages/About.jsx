@@ -6,10 +6,11 @@ import {
   Button,
   Divider,
 } from "@mui/material";
+import bgPattern from "../assets/bg.png";
 
 const About = () => {
   return (
-    <Box sx={{ backgroundColor: "white" }}>
+    <Box sx={{ backgroundImage: `url(${bgPattern})` }}>
       {/* HERO */}
       <Box
         sx={{
@@ -57,7 +58,7 @@ const About = () => {
         />
       </Box>
 
-      <Box sx={{ backgroundColor: "white" }}>
+      <Box>
         {/* VISION / MISSION */}
         <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
           <Box
@@ -183,7 +184,12 @@ const About = () => {
               />
             </Grid>
 
-            <Grid item xs={12} md={6} sx={{ width: "100%" }}>
+            <Grid
+              item
+              xs={12}
+              md={6}
+              sx={{ width: "100%", mt: { xs: 3, md: 0 } }}
+            >
               <Typography
                 sx={{ fontWeight: 800, fontSize: 22, color: "#3B2416" }}
               >
