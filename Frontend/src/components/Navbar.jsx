@@ -24,7 +24,7 @@ import bgPattern from "../assets/bg.png";
 import ProductsMegaMenu from "./ProductsMegaMenu";
 import { productsMenuData } from "./productsMenuData";
 
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 
 /* ---------------- NAV BUTTON ---------------- */
 const NavButton = ({ to, label, end }) => {
@@ -60,6 +60,8 @@ const Navbar = () => {
 
   const location = useLocation();
   const isProductsActive = location.pathname.startsWith("/products");
+
+  const navigate = useNavigate();
 
   return (
     <>
@@ -118,7 +120,10 @@ const Navbar = () => {
               <SearchIcon sx={{ color: "#3B2416" }} />
             </IconButton>
             <IconButton>
-              <PersonOutlineIcon sx={{ color: "#3B2416" }} />
+              <PersonOutlineIcon
+                sx={{ color: "#3B2416" }}
+                onClick={() => navigate("/auth")}
+              />
             </IconButton>
             <IconButton>
               <ShoppingBagOutlinedIcon sx={{ color: "#3B2416" }} />

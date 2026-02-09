@@ -3,6 +3,7 @@ import Home from "./pages/Home";
 import NavbarLayout from "./layout/NavbarLayout";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import Auth from "./pages/Auth";
 function App() {
   return (
     <Routes>
@@ -10,6 +11,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/auth" element={<Auth />} />
         {/* <Route path="*" element={<NotFound />} /> */}
       </Route>
     </Routes>
