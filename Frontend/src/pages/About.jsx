@@ -41,15 +41,15 @@ const About = () => {
         </Typography>
         <Divider
           sx={{
-            width: { xs: 160, lg: 220 },
+            width: { xs: 160, md: 220 },
             borderColor: "#d4a373b9",
-            borderBottomWidth: 40,
-            mt: { xs: -6.8, lg: -7.5 },
+            borderBottomWidth: 35,
+            mt: { xs: -6.8, md: -7.5 },
           }}
         />
         <Divider
           sx={{
-            width: 200,
+            width: { xs: 150, md: 200 },
             borderColor: "#d4a373b9",
             borderBottomWidth: 4,
             mt: 0.5,
