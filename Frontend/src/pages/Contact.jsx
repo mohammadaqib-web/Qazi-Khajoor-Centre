@@ -11,13 +11,7 @@ import bgPattern from "../assets/bg.png";
 
 const Contact = () => {
   return (
-    <Box
-      sx={{
-        backgroundImage: `url(${bgPattern})`,
-        // backgroundRepeat: "repeat",
-        // backgroundColor: "#F5EDE3",
-      }}
-    >
+    <Box sx={{ backgroundImage: `url(${bgPattern})` }}>
       {/* HERO */}
       <Box
         sx={{

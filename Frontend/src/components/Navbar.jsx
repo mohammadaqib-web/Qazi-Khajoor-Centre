@@ -109,7 +109,7 @@ const Navbar = () => {
                 <ProductsMegaMenu />
               </Box>
 
-              <NavButton to="/beirut-delights" label="BEIRUT DELIGHTS" />
+              {/* <NavButton to="/beirut-delights" label="BEIRUT DELIGHTS" /> */}
               <NavButton to="/contact" label="CONTACT" />
             </Box>
           )}
