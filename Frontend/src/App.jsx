@@ -6,6 +6,7 @@ import Contact from "./pages/Contact";
 import Auth from "./pages/Auth";
 import Account from "./pages/Account";
 import AllProducts from "./pages/AllProducts";
+import SingleProduct from "./pages/SingleProduct";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/auth" element={<Auth />} />
         <Route path="/profile" element={<Account />} />
         <Route path="/allProducts" element={<AllProducts />} />
+        <Route path="/product/:id" element={<SingleProduct />} />
         {/* <Route path="*" element={<NotFound />} /> */}
       </Route>
     </Routes>

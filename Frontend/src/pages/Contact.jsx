@@ -145,7 +145,7 @@ const Contact = () => {
           <Grid size={{ xs: 12, md: 4 }}>
             <Typography fontWeight={800}>EMAIL</Typography>
             <Typography sx={{ color: "#6F4E37", mt: 1 }}>
-              customercare@qkc.in
+              qkcinfo@gmail.com
             </Typography>
           </Grid>
         </Grid>
