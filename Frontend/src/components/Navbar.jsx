@@ -12,6 +12,7 @@ import {
   ListItemText,
   useTheme,
   useMediaQuery,
+  Divider,
 } from "@mui/material";
 
 import MenuIcon from "@mui/icons-material/Menu";
@@ -62,6 +63,8 @@ const Navbar = () => {
   const isProductsActive = location.pathname.startsWith("/products");
 
   const navigate = useNavigate();
+  const [cartOpen, setCartOpen] = useState(false);
+  const [qty, setQty] = useState(1);
 
   return (
     <>
@@ -125,7 +128,7 @@ const Navbar = () => {
                 onClick={() => navigate("/auth")}
               />
             </IconButton>
-            <IconButton>
+            <IconButton onClick={() => setCartOpen(true)}>
               <ShoppingBagOutlinedIcon sx={{ color: "#3B2416" }} />
             </IconButton>
           </Box>
@@ -190,6 +193,123 @@ const Navbar = () => {
               <ListItemText primary="CONTACT" />
             </ListItem>
           </List>
+        </Box>
+      </Drawer>
+
+      <Drawer
+        anchor="right"
+        open={cartOpen}
+        onClose={() => setCartOpen(false)}
+        PaperProps={{
+          sx: {
+            width: { xs: "100%", sm: 420 },
+            // backgroundImage: `url(${bgPattern})`,
+            p: 3,
+          },
+        }}
+      >
+        {/* Header */}
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Typography variant="h6" fontWeight={700}>
+            Shopping Cart (1 Item)
+          </Typography>
+          <IconButton onClick={() => setCartOpen(false)}>✕</IconButton>
+        </Box>
+        <Divider sx={{ my: 3 }} />
+        {/* Cart Item */}
+        <Box display="flex" gap={2}>
+          {/* Product Image */}
+          <Box
+            component="img"
+            src="https://images.unsplash.com/photo-1607664608695-45aaa6d621fc"
+            sx={{
+              width: 90,
+              height: 90,
+              objectFit: "cover",
+              borderRadius: 2,
+            }}
+          />
+
+          {/* Product Details */}
+          <Box flex={1}>
+            <Typography fontWeight={600}>
+              Medjoul Jordan Premium Dates
+            </Typography>
+
+            <Typography fontSize={14} color="text.secondary">
+              Weight: 500G
+            </Typography>
+
+            {/* Quantity + Remove Row */}
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+              mt={1.5}
+            >
+              {/* QTY Section */}
+              <Box
+                display="flex"
+                alignItems="center"
+                border="1px solid #ddd"
+                borderRadius={1}
+              >
+                <IconButton
+                  size="small"
+                  onClick={() => setQty((prev) => Math.max(prev - 1, 1))}
+                >
+                  −
+                </IconButton>
+
+                <Typography px={1.5}>{qty}</Typography>
+
+                <IconButton
+                  size="small"
+                  onClick={() => setQty((prev) => prev + 1)}
+                >
+                  +
+                </IconButton>
+              </Box>
+
+              {/* Remove Button */}
+              <Typography
+                sx={{
+                  cursor: "pointer",
+                  fontSize: 14,
+                  textDecoration: "underline",
+                  color: "#2E3A8C",
+                  "&:hover": { opacity: 0.7 },
+                }}
+              >
+                Remove
+              </Typography>
+            </Box>
+
+            {/* Price */}
+            <Typography mt={1} fontWeight={700} color="#2E3A8C">
+              Rs. 1,050.00
+            </Typography>
+          </Box>
+        </Box>
+        <Divider sx={{ my: 3 }} />
+        {/* Subtotal */}
+        <Box mt="auto">
+          <Box display="flex" justifyContent="space-between" mb={2}>
+            <Typography fontWeight={600}>Subtotal</Typography>
+            <Typography fontWeight={700}>Rs. 1,050.00</Typography>
+          </Box>
+
+          <Button
+            fullWidth
+            variant="contained"
+            sx={{
+              backgroundColor: "#2E3A8C",
+              py: 1.5,
+              borderRadius: 2,
+            }}
+          >
+            Buy Now
+          </Button>
         </Box>
       </Drawer>
     </>

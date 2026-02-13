@@ -126,10 +126,10 @@ const DatesMain = () => {
                   maxWidth: "350px",
                   overflow: "hidden", // important
                   transition: "all 0.3s ease",
-
                   "&:hover .product-image": {
                     transform: "scale(1.05)",
                   },
+                  cursor: "pointer",
                 }}
               >
                 <Box
