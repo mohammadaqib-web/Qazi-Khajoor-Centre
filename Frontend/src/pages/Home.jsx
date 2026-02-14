@@ -7,8 +7,12 @@ import AboutStatsSection from "../components/AboutStatsSection";
 import StorageInfoSection from "../components/StorageInfoSection";
 // import Footer from "../components/Footer";
 import TestimonialsSection from "../components/TestimonialsSection";
+// import { useSelector } from "react-redux";
 
 const Home = () => {
+  // const { user, token } = useSelector((state) => state.auth);
+  // console.log({ user, token });
+
   return (
     <Box sx={{ backgroundImage: `url(${bgPattern})` }}>
       {/* <Navbar /> */}

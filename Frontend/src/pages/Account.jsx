@@ -18,6 +18,8 @@ import bgPattern from "../assets/bg.png";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useNavigate } from "react-router-dom";
+import { logout } from "../features/auth/authSlice";
+import { useDispatch } from "react-redux";
 
 const sections = ["Profile", "Orders", "Change Password", "Logout"];
 
@@ -179,6 +181,7 @@ const Account = () => {
   const [active, setActive] = useState("Profile");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   return (
     <Box
@@ -205,7 +208,10 @@ const Account = () => {
                     selected={active === item}
                     onClick={() => {
                       if (item !== "Logout") setActive(item);
-                      else navigate("/auth");
+                      else {
+                        dispatch(logout());
+                        navigate("/auth");
+                      }
                     }}
                     sx={{
                       "&.Mui-selected": {
