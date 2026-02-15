@@ -21,7 +21,6 @@ const AdminLayout = () => {
 
   return (
     <Box sx={{ display: "flex" }}>
-      
       {/* Topbar */}
       <AppBar
         position="fixed"
@@ -60,6 +59,10 @@ const AdminLayout = () => {
         <List>
           <ListItemButton onClick={() => navigate("/admin")}>
             <ListItemText primary="Dashboard" />
+          </ListItemButton>
+
+          <ListItemButton onClick={() => navigate("/admin/category")}>
+            <ListItemText primary="Category" />
           </ListItemButton>
 
           <ListItemButton onClick={() => navigate("/admin/products")}>

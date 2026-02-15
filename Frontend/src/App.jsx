@@ -12,6 +12,9 @@ import Dashboard from "./admin/Dashboard";
 import Products from "./admin/Products";
 import Orders from "./admin/Orders";
 import Users from "./admin/Users";
+import Category from "./admin/Category";
+import PublicRoute from "./layout/PublicRoute";
+import AdminProtectedRoute from "./utils/AdminProtectedRoute";
 
 function App() {
   return (
@@ -20,19 +23,23 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/auth" element={<Auth />} />
+        <Route element={<PublicRoute />}>
+          <Route path="/auth" element={<Auth />} />
+        </Route>
         <Route path="/profile" element={<Account />} />
         <Route path="/allProducts" element={<AllProducts />} />
         <Route path="/product/:id" element={<SingleProduct />} />
 
+        {/* <Route path="*" element={<NotFound />} /> */}
+      </Route>
+      <Route element={<AdminProtectedRoute />}>
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="products" element={<Products />} />
           <Route path="orders" element={<Orders />} />
           <Route path="users" element={<Users />} />
+          <Route path="category" element={<Category />} />
         </Route>
-
-        {/* <Route path="*" element={<NotFound />} /> */}
       </Route>
     </Routes>
   );

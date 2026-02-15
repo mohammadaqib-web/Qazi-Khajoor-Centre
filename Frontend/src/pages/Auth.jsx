@@ -14,6 +14,8 @@ import bgPattern from "../assets/bg.png";
 import { loginSuccess } from "../features/auth/authSlice";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import dayjs from "dayjs";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -77,25 +79,35 @@ const Auth = () => {
 
       if (isLogin) {
         // LOGIN API
-        const res = await axios.post("http://localhost:5000/api/auth/login", {
-          number: formData.number,
-          password: formData.password,
-        });
+        const res = await axios.post(
+          `${import.meta.env.VITE_APP_API}/auth/login`,
+          {
+            number: formData.number,
+            password: formData.password,
+          },
+        );
 
         localStorage.setItem("token", res.data.token);
         alert("Login Success");
       } else {
         // REGISTER API
         const res = await axios.post(
-          "http://localhost:5000/api/auth/register",
+          `${import.meta.env.VITE_APP_API}/auth/register`,
           {
             ...formData,
             firebaseToken,
           },
         );
-
-        localStorage.setItem("token", res.data.token);
-        alert("Registration Success");
+        const loginTime = dayjs().valueOf();
+        dispatch(
+          loginSuccess({
+            user: res.data.user,
+            token: res.data.token,
+            loginTime: loginTime,
+          }),
+        );
+        toast.success("Login Successful!");
+        navigate("/");
       }
     } catch (error) {
       console.log(error);
@@ -106,18 +118,22 @@ const Auth = () => {
   // LOGIN API
   const handleLogin = async () => {
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/login", {
-        number: formData.number,
-        password: formData.password,
-      });
-
+      const res = await axios.post(
+        `${import.meta.env.VITE_APP_API}/auth/login`,
+        {
+          number: formData.number,
+          password: formData.password,
+        },
+      );
+      const loginTime = dayjs().valueOf();
       dispatch(
         loginSuccess({
           user: res.data.user,
           token: res.data.token,
+          loginTime: loginTime,
         }),
       );
-
+      toast.success("Login Successful!");
       navigate("/");
     } catch (error) {
       console.log({ error: error.response.data.message });

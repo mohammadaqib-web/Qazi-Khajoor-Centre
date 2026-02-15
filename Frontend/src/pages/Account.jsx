@@ -20,6 +20,7 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../features/auth/authSlice";
 import { useDispatch } from "react-redux";
+import { toast } from "react-toastify";
 
 const sections = ["Profile", "Orders", "Change Password", "Logout"];
 
@@ -210,6 +211,7 @@ const Account = () => {
                       if (item !== "Logout") setActive(item);
                       else {
                         dispatch(logout());
+                        toast.success("You are logged out!");
                         navigate("/auth");
                       }
                     }}

@@ -26,6 +26,7 @@ import ProductsMegaMenu from "./ProductsMegaMenu";
 import { productsMenuData } from "./productsMenuData";
 
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 /* ---------------- NAV BUTTON ---------------- */
 const NavButton = ({ to, label, end }) => {
@@ -55,6 +56,7 @@ const NavButton = ({ to, label, end }) => {
 };
 
 const Navbar = () => {
+  const { token } = useSelector((state) => state.auth);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -125,7 +127,10 @@ const Navbar = () => {
             <IconButton>
               <PersonOutlineIcon
                 sx={{ color: "#3B2416" }}
-                onClick={() => navigate("/auth")}
+                onClick={() => {
+                  if (token) navigate("/profile");
+                  else navigate("/auth");
+                }}
               />
             </IconButton>
             <IconButton onClick={() => setCartOpen(true)}>
