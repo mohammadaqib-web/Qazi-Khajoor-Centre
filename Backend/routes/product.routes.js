@@ -12,9 +12,10 @@ const {
 
 const auth = require("../middleware/auth.middleware");
 const admin = require("../middleware/admin.middleware");
+const upload = require("../middleware/upload.middleware");
 
-router.post("/", auth, admin, createProduct);
-router.put("/:id", auth, admin, updateProduct);
+router.post("/", auth, admin, upload.single("image"), createProduct);
+router.put("/:id", auth, admin, upload.single("image"), updateProduct);
 router.delete("/:id", auth, admin, deleteProduct);
 
 router.get("/", getAllProducts);

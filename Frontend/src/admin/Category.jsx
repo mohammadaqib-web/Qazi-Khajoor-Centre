@@ -13,6 +13,8 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  Backdrop,
+  CircularProgress,
 } from "@mui/material";
 import axios from "axios";
 import { useSelector } from "react-redux";
@@ -57,30 +59,30 @@ const Category = () => {
 
   // ✅ Save (Create or Update)
   const handleSave = async () => {
-    if (!name.trim()) return;
+    if (!name.trim()) {
+      toast.error("Category name is required");
+      return;
+    }
 
     try {
       setLoading(true);
+
       if (editingCategory) {
         await axios.put(
           `http://localhost:5000/api/categories/${editingCategory._id}`,
           { name },
           {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
+            headers: { Authorization: `Bearer ${token}` },
+          }
         );
-        toast.success("Category name updated!");
+        toast.success("Category updated!");
       } else {
         await axios.post(
           "http://localhost:5000/api/categories",
           { name },
           {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
+            headers: { Authorization: `Bearer ${token}` },
+          }
         );
         toast.success("Category created!");
       }
@@ -89,7 +91,7 @@ const Category = () => {
       setName("");
       fetchCategories();
     } catch (error) {
-      toast.success(error?.response?.data?.message);
+      toast.error(error?.response?.data?.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -98,85 +100,122 @@ const Category = () => {
   // ✅ Delete Category
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/categories/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      setLoading(true);
+
+      await axios.delete(
+        `http://localhost:5000/api/categories/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
       toast.success("Category deleted!");
       fetchCategories();
     } catch (error) {
-      toast.success(error?.response?.data?.message);
+      toast.error(error?.response?.data?.message || "Delete failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Paper sx={{ p: 3 }}>
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={2}
-      >
-        <h2>Categories</h2>
-        <Button variant="contained" onClick={handleAdd}>
-          Add Category
-        </Button>
-      </Box>
-
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Name</TableCell>
-            <TableCell>Actions</TableCell>
-          </TableRow>
-        </TableHead>
-
-        <TableBody>
-          {categories.map((category) => (
-            <TableRow key={category._id}>
-              <TableCell>{category.name}</TableCell>
-              <TableCell>
-                <Button size="small" onClick={() => handleEdit(category)}>
-                  Edit
-                </Button>
-                <Button
-                  size="small"
-                  color="error"
-                  onClick={() => handleDelete(category._id)}
-                >
-                  Delete
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-
-      {/* Dialog */}
-      <Dialog open={open} onClose={() => setOpen(false)}>
-        <DialogTitle>
-          {editingCategory ? "Edit Category" : "Add Category"}
-        </DialogTitle>
-
-        <DialogContent>
-          <TextField
-            fullWidth
-            label="Category Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            sx={{ mt: 2 }}
-          />
-        </DialogContent>
-
-        <DialogActions>
-          <Button onClick={() => setOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleSave} disabled={loading}>
-            Save
+    <>
+      <Paper sx={{ p: 3 }}>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          mb={2}
+        >
+          <h2>Categories</h2>
+          <Button variant="contained" onClick={handleAdd}>
+            Add Category
           </Button>
-        </DialogActions>
-      </Dialog>
-    </Paper>
+        </Box>
+
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Name</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+
+          <TableBody>
+            {categories.map((category) => (
+              <TableRow key={category._id}>
+                <TableCell>{category.name}</TableCell>
+                <TableCell>
+                  <Button
+                    size="small"
+                    onClick={() => handleEdit(category)}
+                    disabled={loading}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    size="small"
+                    color="error"
+                    onClick={() => handleDelete(category._id)}
+                    disabled={loading}
+                  >
+                    Delete
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+
+        {/* Dialog */}
+        <Dialog
+          open={open}
+          onClose={() => !loading && setOpen(false)}
+        >
+          <DialogTitle>
+            {editingCategory ? "Edit Category" : "Add Category"}
+          </DialogTitle>
+
+          <DialogContent>
+            <TextField
+              fullWidth
+              label="Category Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              sx={{ mt: 2 }}
+              disabled={loading}
+            />
+          </DialogContent>
+
+          <DialogActions>
+            <Button
+              onClick={() => setOpen(false)}
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleSave}
+              disabled={loading}
+            >
+              Save
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Paper>
+
+      {/* FULL SCREEN LOADER */}
+      <Backdrop
+        sx={{
+          color: "#fff",
+          zIndex: (theme) => theme.zIndex.drawer + 999,
+        }}
+        open={loading}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+    </>
   );
 };
 

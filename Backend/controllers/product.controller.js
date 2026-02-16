@@ -1,10 +1,45 @@
 const Product = require("../models/product.model");
 const Category = require("../models/category.model");
+const cloudinary = require("../config/cloudinary");
 
 exports.createProduct = async (req, res) => {
   try {
+    if (!req.file) {
+      return res.status(400).json({ message: "Image is required" });
+    }
+
+    if (!req.body.sizes) {
+      return res.status(400).json({ message: "Sizes are required" });
+    }
+
+    // Parse sizes (because coming from FormData)
+    const sizes = JSON.parse(req.body.sizes);
+
+    if (!Array.isArray(sizes) || sizes.length === 0) {
+      return res.status(400).json({ message: "Invalid sizes format" });
+    }
+
+    // Upload image to Cloudinary
+    const uploadResult = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { folder: "products" },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        },
+      );
+      stream.end(req.file.buffer);
+    });
+
     const product = await Product.create({
-      ...req.body,
+      name: req.body.name,
+      description: req.body.description,
+      category: req.body.category,
+      sizes,
+      images: {
+        url: uploadResult.secure_url,
+        public_id: uploadResult.public_id,
+      },
       createdBy: req.user.id,
     });
 
@@ -41,9 +76,45 @@ exports.getProductById = async (req, res) => {
 
 exports.updateProduct = async (req, res) => {
   try {
-    const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // If sizes sent
+    if (req.body.sizes) {
+      product.sizes = JSON.parse(req.body.sizes);
+    }
+
+    // If new image uploaded
+    if (req.file) {
+      // Delete old image
+      await cloudinary.uploader.destroy(product.images.public_id);
+
+      const uploadResult = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "products" },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          },
+        );
+        stream.end(req.file.buffer);
+      });
+
+      product.images = {
+        url: uploadResult.secure_url,
+        public_id: uploadResult.public_id,
+      };
+    }
+
+    // Update basic fields
+    product.name = req.body.name ?? product.name;
+    product.description = req.body.description ?? product.description;
+    product.category = req.body.category ?? product.category;
+
+    await product.save();
 
     res.json(product);
   } catch (error) {
@@ -53,7 +124,16 @@ exports.updateProduct = async (req, res) => {
 
 exports.deleteProduct = async (req, res) => {
   try {
-    await Product.findByIdAndDelete(req.params.id);
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    await cloudinary.uploader.destroy(product.images.public_id);
+
+    await product.deleteOne();
+
     res.json({ message: "Product deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
