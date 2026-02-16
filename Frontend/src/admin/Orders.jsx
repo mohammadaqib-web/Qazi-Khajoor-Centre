@@ -28,7 +28,7 @@ const Orders = () => {
     try {
       setLoading(true);
 
-      const res = await axios.get("http://localhost:5000/api/orders", {
+      const res = await axios.get(`${import.meta.env.VITE_APP_API}/orders`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -49,7 +49,7 @@ const Orders = () => {
       setLoading(true);
 
       await axios.put(
-        `http://localhost:5000/api/orders/${orderId}/status`,
+        `${import.meta.env.VITE_APP_API}/orders/${orderId}/status`,
         { status: newStatus },
         {
           headers: { Authorization: `Bearer ${token}` },

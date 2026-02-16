@@ -32,7 +32,7 @@ const Category = () => {
   // ✅ Fetch Categories
   const fetchCategories = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/categories");
+      const res = await axios.get(`${import.meta.env.VITE_APP_API}/categories`);
       setCategories(res.data.categories);
     } catch (error) {
       console.log(error);
@@ -69,7 +69,7 @@ const Category = () => {
 
       if (editingCategory) {
         await axios.put(
-          `http://localhost:5000/api/categories/${editingCategory._id}`,
+          `${import.meta.env.VITE_APP_API}/categories/${editingCategory._id}`,
           { name },
           {
             headers: { Authorization: `Bearer ${token}` },
@@ -78,7 +78,7 @@ const Category = () => {
         toast.success("Category updated!");
       } else {
         await axios.post(
-          "http://localhost:5000/api/categories",
+          `${import.meta.env.VITE_APP_API}/categories`,
           { name },
           {
             headers: { Authorization: `Bearer ${token}` },
@@ -103,7 +103,7 @@ const Category = () => {
       setLoading(true);
 
       await axios.delete(
-        `http://localhost:5000/api/categories/${id}`,
+        `${import.meta.env.VITE_APP_API}/categories/${id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }

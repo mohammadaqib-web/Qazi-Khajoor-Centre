@@ -44,13 +44,31 @@ const Products = () => {
   // ---------------- FETCH DATA ----------------
 
   const fetchProducts = async () => {
-    const res = await axios.get("http://localhost:5000/api/products");
-    setProducts(res.data);
+    try {
+      setLoading(true);
+
+      const res = await axios.get(`${import.meta.env.VITE_APP_API}/products`);
+
+      setProducts(res.data);
+    } catch (error) {
+      toast.error("Failed to load products");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchCategories = async () => {
-    const res = await axios.get("http://localhost:5000/api/categories");
-    setCategories(res.data.categories);
+    try {
+      setLoading(true);
+
+      const res = await axios.get(`${import.meta.env.VITE_APP_API}/categories`);
+
+      setCategories(res.data.categories);
+    } catch (error) {
+      toast.error("Failed to load categories");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -152,13 +170,13 @@ const Products = () => {
 
       if (editingProduct) {
         await axios.put(
-          `http://localhost:5000/api/products/${editingProduct._id}`,
+          `${import.meta.env.VITE_APP_API}/products/${editingProduct._id}`,
           data,
           { headers: { Authorization: `Bearer ${token}` } },
         );
         toast.success("Product updated successfully");
       } else {
-        await axios.post("http://localhost:5000/api/products", data, {
+        await axios.post(`${import.meta.env.VITE_APP_API}/products`, data, {
           headers: { Authorization: `Bearer ${token}` },
         });
         toast.success("Product created successfully");
@@ -178,7 +196,7 @@ const Products = () => {
   const handleDelete = async (id) => {
     try {
       setLoading(true);
-      await axios.delete(`http://localhost:5000/api/products/${id}`, {
+      await axios.delete(`${import.meta.env.VITE_APP_API}/products/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast.success("Product deleted successfully");
@@ -186,7 +204,7 @@ const Products = () => {
     } catch (error) {
       toast.error(error.response?.data?.message || "Delete failed");
     } finally {
-      setLoading(true);
+      setLoading(false);
     }
   };
 
@@ -239,13 +257,19 @@ const Products = () => {
                 <TableCell>{product.category?.name}</TableCell>
                 <TableCell>₹ {minPrice}</TableCell>
                 <TableCell>
-                  <Button size="small" onClick={() => handleOpen(product)}>
+                  <Button
+                    size="small"
+                    onClick={() => handleOpen(product)}
+                    disabled={loading}
+                  >
                     Edit
                   </Button>
+
                   <Button
                     size="small"
                     color="error"
                     onClick={() => handleDelete(product._id)}
+                    disabled={loading}
                   >
                     Delete
                   </Button>
@@ -259,7 +283,7 @@ const Products = () => {
       {/* DIALOG */}
       <Dialog
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={() => !loading && setOpen(false)}
         fullWidth
         maxWidth="md"
       >

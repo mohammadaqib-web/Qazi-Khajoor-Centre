@@ -29,7 +29,7 @@ const Users = () => {
     try {
       setLoading(true);
 
-      const res = await axios.get("http://localhost:5000/api/users", {
+      const res = await axios.get(`${import.meta.env.VITE_APP_API}/users`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -55,7 +55,7 @@ const Users = () => {
 
       setLoading(true);
 
-      await axios.delete(`http://localhost:5000/api/users/${id}`, {
+      await axios.delete(`${import.meta.env.VITE_APP_API}/users/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -75,7 +75,7 @@ const Users = () => {
       setLoading(true);
 
       await axios.put(
-        `http://localhost:5000/api/users/${user._id}`,
+        `${import.meta.env.VITE_APP_API}/users/${user._id}`,
         { isActive: !user.isActive },
         {
           headers: { Authorization: `Bearer ${token}` },
