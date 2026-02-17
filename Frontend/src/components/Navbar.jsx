@@ -27,6 +27,33 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import logoDark from "../assets/logo-dark.png";
 
+/* ---------------- NAV BUTTON ---------------- */
+const NavButton = ({ to, label, end }) => {
+  return (
+    <Button
+      component={NavLink}
+      to={to}
+      end={end}
+      sx={{
+        color: "#3B2416",
+        fontWeight: "bold",
+        px: 2,
+        borderRadius: 1,
+        textTransform: "uppercase",
+        "&.active": {
+          backgroundColor: "#D4A373",
+          color: "#3B2416",
+        },
+        "&:hover": {
+          backgroundColor: "#D4A373",
+        },
+      }}
+    >
+      {label}
+    </Button>
+  );
+};
+
 import {
   increaseQty,
   decreaseQty,
@@ -100,18 +127,24 @@ const Navbar = ({ categories }) => {
                 <MenuIcon />
               </IconButton>
             )}
-            <img src={logoDark} height="100" />
+            <Box
+              component="img"
+              src={logoDark}
+              sx={{
+                height: { xs: 75, sm: 70, md: 100 },
+                width: "auto",
+                objectFit: "contain",
+                ml: { xs: -2, md: 0 },
+                pt: 1,
+              }}
+            />
           </Box>
 
           {/* CENTER */}
           {!isMobile && (
             <Box display="flex" gap={2}>
-              <Button component={NavLink} to="/" end>
-                HOME
-              </Button>
-              <Button component={NavLink} to="/about">
-                ABOUT
-              </Button>
+              <NavButton to="/" label="HOME" end />
+              <NavButton to="/about" label="ABOUT US" />
 
               <Box
                 sx={{
@@ -121,9 +154,7 @@ const Navbar = ({ categories }) => {
                 <ProductsMegaMenu categories={categories} />
               </Box>
 
-              <Button component={NavLink} to="/contact">
-                CONTACT
-              </Button>
+              <NavButton to="/contact" label="CONTACT" />
             </Box>
           )}
 
@@ -145,8 +176,8 @@ const Navbar = ({ categories }) => {
                 <Box
                   sx={{
                     position: "absolute",
-                    top: -5,
-                    right: 8,
+                    top: -7,
+                    right: 10,
                     backgroundColor: "#D4A373",
                     color: "#fff",
                     fontSize: 12,
@@ -322,6 +353,97 @@ const Navbar = ({ categories }) => {
           >
             Buy Now
           </Button>
+        </Box>
+      </Drawer>
+
+      {/* MOBILE DRAWER */}
+      <Drawer
+        anchor="left"
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+      >
+        <Box width={280} p={2}>
+          <Typography variant="h6" mb={2}>
+            QKC
+          </Typography>
+
+          <List>
+            <ListItem
+              component={NavLink}
+              to="/"
+              end
+              sx={{
+                "&.active": { backgroundColor: "#D4A373" },
+                color: "#3B2416",
+              }}
+              onClick={() => setDrawerOpen(false)}
+            >
+              <ListItemText primary="HOME" />
+            </ListItem>
+
+            <ListItem
+              component={NavLink}
+              to="/about"
+              sx={{
+                "&.active": { backgroundColor: "#D4A373" },
+                color: "#3B2416",
+              }}
+              onClick={() => setDrawerOpen(false)}
+            >
+              <ListItemText primary="ABOUT US" />
+            </ListItem>
+
+            {/* PRODUCTS */}
+            {/* {productsMenuData.map((col) => ( */}
+            <Box mb={1} ml={2} mt={1}>
+              <Typography
+                fontSize={"medium"}
+                sx={{
+                  // "&.active": { backgroundColor: "#D4A373" },
+                  color: "#3B2416",
+                }}
+                onClick={() => {
+                  navigate("/allProducts");
+                  setDrawerOpen(false);
+                }}
+              >
+                {"ALL PRODUCTS"}
+              </Typography>
+              {categories.map((item, index) => (
+                <ListItem
+                  key={item._id}
+                  sx={{
+                    pl: 2,
+                    cursor: "pointer",
+                    textTransform: "capitalize",
+                    "&:hover": { color: "#C59A3D" },
+                    mt: index === 0 ? 1 : 0,
+                  }}
+                >
+                  <ListItemText
+                    primary={item.name}
+                    onClick={() => {
+                      navigate(`/${encodeURIComponent(item.name)}/${item._id}`);
+                      setDrawerOpen(false);
+                    }}
+                  />
+                </ListItem>
+              ))}
+            </Box>
+            {/* ))} */}
+
+            <ListItem
+              component={NavLink}
+              to="/contact"
+              sx={{
+                "&.active": { backgroundColor: "#D4A373" },
+                color: "#3B2416",
+              }}
+              onClick={() => setDrawerOpen(false)}
+            >
+              <ListItemText primary="CONTACT" />
+            </ListItem>
+          </List>
         </Box>
       </Drawer>
     </>

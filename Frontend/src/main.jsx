@@ -13,13 +13,13 @@ import "react-toastify/dist/ReactToastify.css";
 createRoot(document.getElementById("root")).render(
   <Provider store={store}>
     <PersistGate loading={null} persistor={persistor}>
-      <ThemeProvider theme={theme}>
+      {/* <ThemeProvider theme={theme}> */}
         <BrowserRouter>
           <CssBaseline />
           <App />
           <ToastContainer />
         </BrowserRouter>
-      </ThemeProvider>
+      {/* </ThemeProvider> */}
     </PersistGate>
   </Provider>,
 );
