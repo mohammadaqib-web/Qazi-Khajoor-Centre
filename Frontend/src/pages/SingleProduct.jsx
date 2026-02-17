@@ -22,15 +22,18 @@ import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import bgPattern from "../assets/bg.png";
 import SuggestedProducts from "../components/SuggestedProducts";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import VerifiedIcon from "@mui/icons-material/Verified";
+import { addToCart } from "../features/auth/cartSlice";
 
 const API = import.meta.env.VITE_APP_API;
 
 const SingleProduct = () => {
   const { id } = useParams();
   const { token } = useSelector((state) => state.auth);
+
+  const dispatch = useDispatch();
 
   const [product, setProduct] = useState(null);
   const [reviews, setReviews] = useState([]);
@@ -210,8 +213,22 @@ const SingleProduct = () => {
             <Box mt={4} display="flex" gap={2}>
               <Button
                 variant="contained"
-                disabled={selectedSize?.stock === 0}
                 sx={{ backgroundColor: "#D4A373" }}
+                disabled={selectedSize?.stock === 0}
+                onClick={() =>
+                  dispatch(
+                    addToCart({
+                      cartId: `${product._id}-${selectedSize._id}`,
+                      productId: product._id,
+                      sizeId: selectedSize._id,
+                      name: product.name,
+                      image: product.images.url,
+                      size: selectedSize.size,
+                      price: selectedSize.price,
+                      quantity: qty,
+                    }),
+                  )
+                }
               >
                 Add to Cart
               </Button>

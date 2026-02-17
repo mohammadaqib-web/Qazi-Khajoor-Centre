@@ -198,3 +198,37 @@ exports.getRandomProducts = async (req, res) => {
   const products = await Product.aggregate(pipeline);
   res.json(products);
 };
+
+exports.validateCartItems = async (req, res) => {
+  try {
+    const { items } = req.body;
+
+    const validatedItems = [];
+
+    for (const item of items) {
+      const product = await Product.findById(item.productId);
+
+      if (!product) continue;
+
+      const size = product.sizes.find((s) => s._id.toString() === item.sizeId);
+
+      if (!size) continue;
+
+      validatedItems.push({
+        productId: product._id,
+        sizeId: size._id,
+        name: product.name,
+        image: product.images.url,
+        size: size.size,
+        price: size.price,
+        stock: size.stock,
+        requestedQty: item.quantity,
+        availableQty: Math.min(item.quantity, size.stock),
+      });
+    }
+
+    res.json(validatedItems);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

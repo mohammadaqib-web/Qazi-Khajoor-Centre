@@ -9,6 +9,7 @@ const {
   deleteProduct,
   getProductsByCategory,
   getRandomProducts,
+  validateCartItems,
 } = require("../controllers/product.controller");
 
 const auth = require("../middleware/auth.middleware");
@@ -23,5 +24,6 @@ router.get("/", getAllProducts);
 router.get("/random", getRandomProducts);
 router.get("/:id", getProductById);
 router.get("/category/:categoryId", getProductsByCategory);
+router.post("/cart/validate", validateCartItems);
 
 module.exports = router;
