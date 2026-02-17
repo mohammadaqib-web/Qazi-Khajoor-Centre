@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import {
   AppBar,
   Toolbar,
@@ -27,6 +28,8 @@ import { productsMenuData } from "./productsMenuData";
 
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import logo from "../assets/logo.png";
+import logoDark from "../assets/logo-dark.png";
 
 /* ---------------- NAV BUTTON ---------------- */
 const NavButton = ({ to, label, end }) => {
@@ -55,7 +58,7 @@ const NavButton = ({ to, label, end }) => {
   );
 };
 
-const Navbar = () => {
+const Navbar = ({ categories, setCategories }) => {
   const { token } = useSelector((state) => state.auth);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -93,9 +96,15 @@ const Navbar = () => {
               </IconButton>
             )}
 
-            <Typography variant="h6" fontWeight="bold">
+            {/* <Typography variant="h6" fontWeight="bold">
               QKC
-            </Typography>
+            </Typography> */}
+            <img
+              src={logoDark}
+              height={"110px"}
+              width={"100px"}
+              style={{ objectFit: "contain", marginTop: "0px" }}
+            />
           </Box>
 
           {/* CENTER MENU (Desktop) */}
@@ -111,7 +120,7 @@ const Navbar = () => {
                   backgroundColor: isProductsActive ? "#D4A373" : "transparent",
                 }}
               >
-                <ProductsMegaMenu />
+                <ProductsMegaMenu categories={categories} />
               </Box>
 
               {/* <NavButton to="/beirut-delights" label="BEIRUT DELIGHTS" /> */}
@@ -160,6 +169,7 @@ const Navbar = () => {
                 "&.active": { backgroundColor: "#D4A373" },
                 color: "#3B2416",
               }}
+              onClick={() => setDrawerOpen(false)}
             >
               <ListItemText primary="HOME" />
             </ListItem>
@@ -171,21 +181,49 @@ const Navbar = () => {
                 "&.active": { backgroundColor: "#D4A373" },
                 color: "#3B2416",
               }}
+              onClick={() => setDrawerOpen(false)}
             >
               <ListItemText primary="ABOUT US" />
             </ListItem>
 
             {/* PRODUCTS */}
-            {productsMenuData.map((col) => (
-              <Box key={col.title} mb={1}>
-                <Typography fontWeight={600}>{col.title}</Typography>
-                {col.items.map((item) => (
-                  <ListItem key={item} sx={{ pl: 2 }}>
-                    <ListItemText primary={item} />
-                  </ListItem>
-                ))}
-              </Box>
-            ))}
+            {/* {productsMenuData.map((col) => ( */}
+            <Box mb={1} ml={2} mt={1}>
+              <Typography
+                fontSize={"medium"}
+                sx={{
+                  // "&.active": { backgroundColor: "#D4A373" },
+                  color: "#3B2416",
+                }}
+                onClick={() => {
+                  navigate("/allProducts");
+                  setDrawerOpen(false);
+                }}
+              >
+                {"ALL PRODUCTS"}
+              </Typography>
+              {categories.map((item, index) => (
+                <ListItem
+                  key={item._id}
+                  sx={{
+                    pl: 2,
+                    cursor: "pointer",
+                    textTransform: "capitalize",
+                    "&:hover": { color: "#C59A3D" },
+                    mt: index === 0 ? 1 : 0,
+                  }}
+                >
+                  <ListItemText
+                    primary={item.name}
+                    onClick={() => {
+                      navigate(`/${encodeURIComponent(item.name)}/${item._id}`);
+                      setDrawerOpen(false);
+                    }}
+                  />
+                </ListItem>
+              ))}
+            </Box>
+            {/* ))} */}
 
             <ListItem
               component={NavLink}
@@ -194,6 +232,7 @@ const Navbar = () => {
                 "&.active": { backgroundColor: "#D4A373" },
                 color: "#3B2416",
               }}
+              onClick={() => setDrawerOpen(false)}
             >
               <ListItemText primary="CONTACT" />
             </ListItem>

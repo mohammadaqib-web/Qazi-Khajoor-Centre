@@ -1,23 +1,29 @@
 import { Box, Typography, Button, Container } from "@mui/material";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay } from "swiper/modules";
+import { Autoplay, Pagination } from "swiper/modules";
 import "swiper/css";
+import "swiper/css/pagination";
 import { heroSlides } from "./heroSlides";
+import { useNavigate } from "react-router-dom";
 
 const HeroSlider = () => {
+  const navigate = useNavigate();
   return (
     <Swiper
-      modules={[Autoplay]}
+      modules={[Autoplay, Pagination]}
       autoplay={{ delay: 3000, disableOnInteraction: false }}
       loop
-      style={{ height: "85vh" }}
+      pagination={{
+        clickable: true,
+      }}
+      style={{ height: "65vh" }}
     >
       {heroSlides.map((slide, index) => (
         <SwiperSlide key={index}>
           <Box
             sx={{
               position: "relative",
-              height: "85vh",
+              height: "65vh",
               overflow: "hidden",
               display: "flex",
               alignItems: "center",
@@ -34,6 +40,7 @@ const HeroSlider = () => {
                 filter: "blur(3px)",
                 transform: "scale(1.1)", // prevents blur edges
                 zIndex: 0,
+                mt: -10,
               }}
             />
 
@@ -96,6 +103,7 @@ const HeroSlider = () => {
                     py: 1.2,
                     color: "white",
                   }}
+                  onClick={() => navigate("/allProducts")}
                 >
                   {slide.cta}
                 </Button>

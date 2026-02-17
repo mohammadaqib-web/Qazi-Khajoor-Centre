@@ -23,6 +23,7 @@ import FilterListIcon from "@mui/icons-material/FilterList";
 import CloseIcon from "@mui/icons-material/Close";
 import bgPattern from "../assets/bg.png";
 import firstImg from "../assets/dates.png";
+import { useParams } from "react-router-dom";
 
 const products = Array.from({ length: 12 }, (_, i) => ({
   id: i,
@@ -33,6 +34,7 @@ const products = Array.from({ length: 12 }, (_, i) => ({
 }));
 
 const AllProducts = () => {
+  const { category, id } = useParams();
   const isMobile = useMediaQuery("(max-width:900px)");
   const [openFilter, setOpenFilter] = useState(false);
   const [page, setPage] = useState(1);
@@ -136,27 +138,32 @@ const AllProducts = () => {
               backdropFilter: "blur(5px)",
               // textDecoration: "underline #6F4E37 5px",
               p: 2,
+              textTransform: "uppercase",
             }}
           >
-            All Products
+            {category || "All Products"}
           </Typography>
-          <Divider
-            sx={{
-              width: { xs: 190, md: 250 },
-              borderColor: "#d4a373b9",
-              borderBottomWidth: 35,
-              mt: { xs: -6.5, md: -7.5 },
-            }}
-          />
-          <Divider
-            sx={{
-              width: { xs: 150, md: 200 },
-              borderColor: "#d4a373b9",
-              borderBottomWidth: 4,
-              mt: 0.5,
-              zIndex: 2,
-            }}
-          />
+          {!category && (
+            <>
+              <Divider
+                sx={{
+                  width: { xs: 190, md: 250 },
+                  borderColor: "#d4a373b9",
+                  borderBottomWidth: 35,
+                  mt: { xs: -6.5, md: -7.5 },
+                }}
+              />
+              <Divider
+                sx={{
+                  width: { xs: 150, md: 200 },
+                  borderColor: "#d4a373b9",
+                  borderBottomWidth: 4,
+                  mt: 0.5,
+                  zIndex: 2,
+                }}
+              />
+            </>
+          )}
         </Box>
         <Container maxWidth="lg" sx={{ py: 6 }}>
           <Grid container spacing={4}>
@@ -170,13 +177,14 @@ const AllProducts = () => {
             )}
 
             {/* PRODUCTS AREA */}
-            <Grid size={{ xs: 12, md: 9 }}>
+            <Grid size={{ xs: 12, md: 9 }} mt={-2}>
               {/* Mobile Filter Button */}
               {isMobile && (
                 <Box display="flex" justifyContent="flex-end" mb={2}>
                   <Button
                     startIcon={<FilterListIcon />}
                     onClick={() => setOpenFilter(true)}
+                    sx={{ color: "#3B2416" }}
                   >
                     Filter
                   </Button>

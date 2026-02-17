@@ -5,3 +5,24 @@
   background-repeat: repeat;
   background-size: 300px 300px;
 } */
+
+/* Position pagination bottom center */
+.swiper-pagination {
+  bottom: 20px !important;
+}
+
+/* Default (inactive) bars */
+.swiper-pagination-bullet {
+  width: 30px;
+  height: 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 1;
+  transition: 0.3s;
+}
+
+/* Active slide bar */
+.swiper-pagination-bullet-active {
+  background: #d4a373;
+  width: 40px;
+}

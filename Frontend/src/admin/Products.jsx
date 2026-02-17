@@ -299,7 +299,7 @@ const Products = () => {
             name="name"
             value={formData.name}
             onChange={handleChange}
-            sx={{ mb: 2 }}
+            sx={{ mb: 2, mt: 2 }}
           />
 
           <TextField

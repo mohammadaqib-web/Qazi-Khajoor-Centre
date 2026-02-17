@@ -9,8 +9,11 @@ import {
 import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import YouTubeIcon from "@mui/icons-material/YouTube";
+import logoDark from "../assets/logo-dark.png";
+import { useNavigate } from "react-router-dom";
 
-const Footer = () => {
+const Footer = ({ categories, setCategories }) => {
+  const navigate = useNavigate();
   return (
     <Box
       sx={{
@@ -36,9 +39,9 @@ const Footer = () => {
           >
             <Box
               component="img"
-              src="/assets/logo.png"
-              alt="QKC"
-              sx={{ width: "100%" }}
+              src={logoDark}
+              alt="QKC logo"
+              sx={{ width: "150px" }}
             />
           </Grid>
 
@@ -51,6 +54,10 @@ const Footer = () => {
               <Typography
                 key={item}
                 sx={{ mb: 1, fontSize: 14, cursor: "pointer" }}
+                onClick={() => {
+                  if (item === "Contact Us") navigate("/contact");
+                  if (item === "About Us") navigate("/about");
+                }}
               >
                 {item}
               </Typography>
@@ -62,23 +69,26 @@ const Footer = () => {
             <Typography fontWeight={700} mb={2}>
               PRODUCTS
             </Typography>
-            {[
-              "All Products",
-              "QKC Delicacies",
-              "Stuffed Dates",
-              "Occasions Gifting",
-            ].map((item) => (
+            {categories?.slice(0, 4).map((item) => (
               <Typography
-                key={item}
-                sx={{ mb: 1, fontSize: 14, cursor: "pointer" }}
+                key={item._id}
+                sx={{
+                  mb: 1,
+                  fontSize: 14,
+                  cursor: "pointer",
+                  textTransform: "capitalize",
+                }}
+                onClick={() =>
+                  navigate(`/${encodeURIComponent(item.name)}/${item._id}`)
+                }
               >
-                {item}
+                {item.name}
               </Typography>
             ))}
           </Grid>
 
           {/* CATEGORIES */}
-          <Grid item xs={12} sm={6} md={2}>
+          {/* <Grid item xs={12} sm={6} md={2}>
             <Typography fontWeight={700} mb={2}>
               CATEGORIES
             </Typography>
@@ -90,7 +100,7 @@ const Footer = () => {
                 {item}
               </Typography>
             ))}
-          </Grid>
+          </Grid> */}
 
           {/* SOCIAL */}
           <Grid
@@ -131,17 +141,18 @@ const Footer = () => {
           sx={{ pb: 3 }}
         >
           <Grid
-            item
-            xs={12}
-            md={6}
-            sx={{ textAlign: { xs: "center", md: "left" } }}
+            // item
+            // xs={12}
+            // md={12}
+            size={{ xs: 12 }}
+            sx={{ textAlign: { xs: "center", md: "center" } }}
           >
             <Typography fontSize={14}>
               © 2026 Qari Khajoor Centre. All Rights Reserved.
             </Typography>
           </Grid>
 
-          <Grid
+          {/* <Grid
             item
             xs={12}
             md={6}
@@ -165,7 +176,7 @@ const Footer = () => {
                 {item}
               </Typography>
             ))}
-          </Grid>
+          </Grid> */}
         </Grid>
       </Container>
     </Box>
