@@ -8,6 +8,7 @@ const {
   updateProduct,
   deleteProduct,
   getProductsByCategory,
+  getRandomProducts,
 } = require("../controllers/product.controller");
 
 const auth = require("../middleware/auth.middleware");
@@ -19,6 +20,7 @@ router.put("/:id", auth, admin, upload.single("image"), updateProduct);
 router.delete("/:id", auth, admin, deleteProduct);
 
 router.get("/", getAllProducts);
+router.get("/random", getRandomProducts);
 router.get("/:id", getProductById);
 router.get("/category/:categoryId", getProductsByCategory);
 

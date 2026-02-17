@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Container,
@@ -11,120 +11,215 @@ import {
   InputLabel,
   Tabs,
   Tab,
-  Paper,
   Divider,
   IconButton,
   Rating,
+  CircularProgress,
 } from "@mui/material";
+import { useParams } from "react-router-dom";
+import axios from "axios";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import bgPattern from "../assets/bg.png";
 import SuggestedProducts from "../components/SuggestedProducts";
+import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
+import VerifiedIcon from "@mui/icons-material/Verified";
+
+const API = import.meta.env.VITE_APP_API;
 
 const SingleProduct = () => {
+  const { id } = useParams();
+  const { token } = useSelector((state) => state.auth);
+
+  const [product, setProduct] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [selectedSize, setSelectedSize] = useState(null);
   const [qty, setQty] = useState(1);
   const [tab, setTab] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [loadingReview, setLoadingReview] = useState(false);
+
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+
+  const totalReviews = reviews.length;
+
+  const ratingCounts = [5, 4, 3, 2, 1].map(
+    (star) => reviews.filter((r) => r.rating === star).length,
+  );
+
+  useEffect(() => {
+    fetchData();
+  }, [id]);
+
+  const fetchData = async () => {
+    try {
+      const productRes = await axios.get(`${API}/products/${id}`);
+      const reviewsRes = await axios.get(`${API}/reviews/${id}`);
+
+      setProduct(productRes.data);
+      setReviews(reviewsRes.data);
+
+      // Default select first size
+      if (productRes.data.sizes.length > 0) {
+        setSelectedSize(productRes.data.sizes[0]);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" mt={10}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!product) {
+    return <Typography align="center">Product not found</Typography>;
+  }
 
   return (
-    <Box
-      sx={{
-        // backgroundColor: "white",
-        backgroundImage: `url(${bgPattern})`,
-      }}
-    >
-      <Container maxWidth="lg" sx={{ py: 6 }}>
+    <Box sx={{ backgroundImage: `url(${bgPattern})` }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 6 } }}>
         <Grid container spacing={6}>
-          {/* LEFT - IMAGE */}
+          {/* LEFT IMAGE */}
           <Grid size={{ xs: 12, md: 6 }}>
             <Box
               component="img"
-              src="https://images.unsplash.com/photo-1607664608695-45aaa6d621fc"
+              src={product.images?.url}
               sx={{
                 width: "100%",
                 borderRadius: 3,
                 objectFit: "contain",
-                maxHeight: "400px",
+                minHeight: 200,
+                maxHeight: 400,
               }}
             />
           </Grid>
 
-          {/* RIGHT - DETAILS */}
-          <Grid size={{ xs: 12, md: 6 }}>
+          {/* RIGHT DETAILS */}
+          <Grid size={{ xs: 12, md: 6 }} sx={{ mt: { xs: -3.5, md: 0 } }}>
             <Typography variant="h4" fontWeight={700}>
-              Medjoul Jordan Premium / Super Jumbo Dates
+              {product.name}
             </Typography>
 
+            {/* Price from selected size */}
             <Typography
               variant="h5"
               sx={{ color: "#C9A227", mt: 2, fontWeight: 700 }}
             >
-              Rs. 1,050.00
+              Rs. {selectedSize?.price}
             </Typography>
 
-            {/* Rating */}
+            {/* Rating from backend */}
             <Box display="flex" alignItems="center" mt={2}>
-              <Rating value={4.2} precision={0.1} readOnly />
-              <Typography ml={1}>4.2 (322 reviews)</Typography>
+              <Rating
+                value={product.averageRating || 0}
+                precision={0.1}
+                readOnly
+              />
+              <Typography ml={1}>
+                {product.averageRating?.toFixed(1) || 0} ({reviews.length}{" "}
+                reviews)
+              </Typography>
             </Box>
 
-            {/* Weight Dropdown */}
-            <FormControl sx={{ mt: 3, width: { xs: "100%", sm: "20%" } }}>
-              <InputLabel>Weight</InputLabel>
-              <Select defaultValue="500g" label="Weight">
-                <MenuItem value="500g">500g</MenuItem>
-                <MenuItem value="1kg">1kg</MenuItem>
-              </Select>
-            </FormControl>
-
-            {/* Size Dropdown */}
-            {/* <FormControl fullWidth sx={{ mt: 3 }}>
-            <InputLabel>Size</InputLabel>
-            <Select defaultValue="Super Jumbo" label="Size">
-              <MenuItem value="Super Jumbo">Super Jumbo</MenuItem>
-              <MenuItem value="Large">Large</MenuItem>
-            </Select>
-          </FormControl> */}
-
-            {/* Quantity */}
-            <Box display="flex" alignItems="center" mt={3}>
-              <Typography mr={2}>QTY</Typography>
-              <Box
-                display="flex"
-                alignItems="center"
-                border="1px solid #ddd"
-                borderRadius={2}
-              >
-                <IconButton
-                  onClick={() => setQty((prev) => (prev > 1 ? prev - 1 : 1))}
+            {/* Weight + Quantity */}
+            <Box
+              mt={3}
+              display="flex"
+              gap={4}
+              flexDirection={{ xs: "column", sm: "row" }}
+              alignItems={{ xs: "flex-start", sm: "center" }}
+            >
+              {/* Dynamic Size Dropdown */}
+              <FormControl sx={{ width: { xs: "100%", sm: 200 } }}>
+                <InputLabel>Weight</InputLabel>
+                <Select
+                  value={selectedSize?._id || ""}
+                  label="Weight"
+                  onChange={(e) => {
+                    const size = product.sizes.find(
+                      (s) => s._id === e.target.value,
+                    );
+                    setSelectedSize(size);
+                  }}
                 >
-                  <RemoveIcon />
-                </IconButton>
-                <Typography px={2}>{qty}</Typography>
-                <IconButton onClick={() => setQty((prev) => prev + 1)}>
-                  <AddIcon />
-                </IconButton>
+                  {product.sizes.map((size) => (
+                    <MenuItem key={size._id} value={size._id}>
+                      {size.size}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              {/* Quantity */}
+              <Box display="flex" alignItems="center">
+                <Typography mr={2}>QTY</Typography>
+                <Box
+                  display="flex"
+                  alignItems="center"
+                  // border="1px solid #ddd"
+                  // borderRadius={2}
+                >
+                  <IconButton
+                    onClick={() => setQty((prev) => (prev > 1 ? prev - 1 : 1))}
+                  >
+                    <RemoveIcon
+                      sx={{
+                        border: "1px solid rgba(0,0,0,0.2)",
+                        borderRadius: 24,
+                        p: 0.5,
+                        fontSize: 30,
+                      }}
+                    />
+                  </IconButton>
+                  <Typography px={2}>{qty}</Typography>
+                  <IconButton
+                    onClick={() => {
+                      if (qty < selectedSize?.stock) setQty((prev) => prev + 1);
+                    }}
+                  >
+                    <AddIcon
+                      sx={{
+                        border: "1px solid rgba(0,0,0,0.2)",
+                        borderRadius: 24,
+                        p: 0.5,
+                        fontSize: 30,
+                      }}
+                    />
+                  </IconButton>
+                </Box>
               </Box>
             </Box>
 
-            {/* Buttons */}
+            {/* Stock Info */}
+            <Typography mt={2} color="text.secondary">
+              {selectedSize?.stock > 0
+                ? `${selectedSize.stock} items in stock`
+                : "Out of stock"}
+            </Typography>
+
             <Box mt={4} display="flex" gap={2}>
               <Button
                 variant="contained"
-                sx={{
-                  backgroundColor: "#D4A373",
-                  px: 4,
-                  py: 1.5,
-                }}
+                disabled={selectedSize?.stock === 0}
+                sx={{ backgroundColor: "#D4A373" }}
               >
                 Add to Cart
               </Button>
+
               <Button
                 variant="contained"
-                sx={{
-                  backgroundColor: "#2E3A8C",
-                  px: 4,
-                  py: 1.5,
-                }}
+                disabled={selectedSize?.stock === 0}
+                sx={{ backgroundColor: "#2E3A8C" }}
               >
                 Buy Now
               </Button>
@@ -132,14 +227,9 @@ const SingleProduct = () => {
           </Grid>
         </Grid>
 
-        {/* Tabs Section */}
+        {/* Tabs */}
         <Box mt={8}>
-          <Tabs
-            value={tab}
-            onChange={(e, newValue) => setTab(newValue)}
-            textColor="inherit"
-            indicatorColor="primary"
-          >
+          <Tabs value={tab} onChange={(e, val) => setTab(val)}>
             <Tab label="Description" />
             <Tab label="Customer Reviews" />
           </Tabs>
@@ -148,15 +238,13 @@ const SingleProduct = () => {
 
           {tab === 0 && (
             <Typography lineHeight={1.8} mb={6}>
-              Medjoul Jordan Premium Dates are known as the King of Dates.
-              Naturally sweet, juicy and packed with fiber, antioxidants and
-              essential minerals.
+              {product.description || "NO DESCRIPTION"}
             </Typography>
           )}
 
           {tab === 1 && (
             <Box>
-              {/* TOP SUMMARY SECTION */}
+              {/* ⭐ SUMMARY SECTION */}
               <Box
                 display="flex"
                 justifyContent="space-between"
@@ -164,23 +252,28 @@ const SingleProduct = () => {
                 alignItems="center"
                 mb={6}
               >
-                {/* LEFT - Overall Rating */}
+                {/* LEFT */}
                 <Box textAlign="center" flex={1} minWidth={250}>
-                  <Rating value={4.3} precision={0.1} readOnly size="large" />
+                  <Rating
+                    value={product.averageRating || 0}
+                    precision={0.1}
+                    readOnly
+                    size="large"
+                  />
                   <Typography fontWeight={600} mt={1}>
-                    4.27 out of 5
+                    {product.averageRating?.toFixed(2) || 0} out of 5
                   </Typography>
                   <Typography color="text.secondary">
-                    Based on 322 reviews
+                    Based on {totalReviews} reviews
                   </Typography>
                 </Box>
 
-                {/* CENTER - Rating Breakdown */}
+                {/* CENTER - STAR BREAKDOWN */}
                 <Box flex={1} minWidth={300} px={4}>
                   {[5, 4, 3, 2, 1].map((star, index) => {
-                    const data = [231, 27, 20, 7, 37];
-                    const total = 322;
-                    const value = (data[index] / total) * 100;
+                    const count = ratingCounts[index];
+                    const percent =
+                      totalReviews > 0 ? (count / totalReviews) * 100 : 0;
 
                     return (
                       <Box
@@ -192,6 +285,7 @@ const SingleProduct = () => {
                       >
                         <Typography width={20}>{star}</Typography>
                         <Rating value={star} readOnly size="small" />
+
                         <Box
                           flex={1}
                           height={8}
@@ -203,81 +297,143 @@ const SingleProduct = () => {
                         >
                           <Box
                             sx={{
-                              width: `${value}%`,
+                              width: `${percent}%`,
                               height: "100%",
                               background: "#1f7a68",
                             }}
                           />
                         </Box>
-                        <Typography width={30}>{data[index]}</Typography>
+
+                        <Typography width={30}>{count}</Typography>
                       </Box>
                     );
                   })}
                 </Box>
 
-                {/* RIGHT - Write Review Button */}
-                <Box flex={1} minWidth={200} textAlign="center">
-                  <Button
-                    variant="contained"
-                    sx={{
-                      backgroundColor: "#1f7a68",
-                      px: 4,
-                      py: 1.2,
-                      borderRadius: 1,
-                    }}
-                  >
-                    Write a review
-                  </Button>
-                </Box>
+                {/* RIGHT - BUTTON */}
+                {token && (
+                  <Box flex={1} minWidth={200} textAlign="center">
+                    <Button
+                      variant="contained"
+                      sx={{ backgroundColor: "#3B2416" }}
+                      onClick={() => setShowReviewForm(!showReviewForm)}
+                    >
+                      {showReviewForm ? "Cancel review" : "Write a review"}
+                    </Button>
+                  </Box>
+                )}
               </Box>
 
               <Divider sx={{ mb: 4 }} />
 
-              {/* REVIEWS LIST */}
-              {[1, 2].map((item, index) => (
-                <Box key={index} mb={4}>
-                  <Rating value={index === 0 ? 1 : 5} readOnly />
-
-                  <Box display="flex" alignItems="center" gap={1} mt={1}>
-                    <Typography fontWeight={600}>
-                      {index === 0 ? "zee ahmed" : "Gagan"}
-                    </Typography>
-                    <Box
-                      sx={{
-                        background: "#1f7a68",
-                        color: "#fff",
-                        px: 1,
-                        fontSize: 12,
-                        borderRadius: 1,
-                      }}
-                    >
-                      Verified
-                    </Box>
-                    <Typography ml="auto" fontSize={13} color="text.secondary">
-                      {index === 0 ? "02/05/2026" : "02/04/2026"}
-                    </Typography>
-                  </Box>
-
-                  <Typography fontWeight={600} mt={1}>
-                    {index === 0
-                      ? "I ordered by mistake and these guys wont refund for me two same orders"
-                      : "Items delivered were fresh"}
+              {/* ✍️ REVIEW FORM */}
+              {showReviewForm && (
+                <Box mb={6}>
+                  <Typography variant="h6" fontWeight={700} mb={2}>
+                    Write a review
                   </Typography>
 
-                  <Typography color="text.secondary" mt={0.5}>
-                    {index === 0
-                      ? "horrible service"
-                      : "Very good quality and fresh dates."}
-                  </Typography>
+                  <Typography>Rating</Typography>
+                  <Rating
+                    value={rating}
+                    onChange={(e, newValue) => setRating(newValue)}
+                    sx={{ mb: 2 }}
+                  />
 
-                  <Divider sx={{ mt: 3 }} />
+                  <Typography>Review</Typography>
+                  <textarea
+                    rows={5}
+                    style={{
+                      width: "100%",
+                      padding: 12,
+                      borderRadius: 8,
+                      border: "1px solid #ccc",
+                      marginBottom: 16,
+                    }}
+                    placeholder="Start writing here..."
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                  />
+
+                  <Button
+                    variant="contained"
+                    sx={{ backgroundColor: "#3B2416" }}
+                    disabled={rating > 0 || loadingReview ? false : true}
+                    onClick={async () => {
+                      if (rating > 0) {
+                        try {
+                          setLoadingReview(true);
+                          await axios.post(
+                            `${API}/reviews/${id}`,
+                            {
+                              rating,
+                              comment,
+                            },
+                            {
+                              headers: { Authorization: `Bearer ${token}` },
+                            },
+                          );
+
+                          setShowReviewForm(false);
+                          setRating(0);
+                          setComment("");
+
+                          // Refetch reviews data
+                          fetchData();
+                        } catch (err) {
+                          toast.error(err?.response?.data?.message);
+                          console.error({ err });
+                        } finally {
+                          setLoadingReview(false);
+                        }
+                      }
+                    }}
+                  >
+                    Submit Review
+                  </Button>
                 </Box>
-              ))}
+              )}
+
+              {/* 📝 REVIEW LIST */}
+              {reviews.length > 0 ? (
+                reviews.map((review) => (
+                  <Box key={review._id} mb={4}>
+                    <Rating value={review.rating} readOnly />
+
+                    <Box display={"flex"} alignItems={"center"}>
+                      <Typography fontWeight={600} mt={1}>
+                        {review.user?.name}
+                      </Typography>
+                      <span>
+                        {" "}
+                        <VerifiedIcon
+                          sx={{
+                            fontSize: "16px",
+                            color: "green",
+                            mt: 1.5,
+                            ml: 0.5,
+                          }}
+                        />
+                      </span>
+                    </Box>
+                    <Typography color="text.secondary">
+                      {review.comment}
+                    </Typography>
+
+                    <Divider sx={{ mt: 2 }} />
+                  </Box>
+                ))
+              ) : (
+                <Typography sx={{ textAlign: "center" }}>
+                  NO REVIEWS YET
+                </Typography>
+              )}
             </Box>
           )}
         </Box>
       </Container>
-      <SuggestedProducts />
+
+      <SuggestedProducts currentProductId={id} />
     </Box>
   );
 };

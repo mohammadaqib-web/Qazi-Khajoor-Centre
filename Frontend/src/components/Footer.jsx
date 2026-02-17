@@ -109,22 +109,29 @@ const Footer = ({ categories, setCategories }) => {
             sm={6}
             md={2}
             sx={{
-              textAlign: { xs: "center", md: "left" },
+              textAlign: { xs: "center", md: "center" },
             }}
           >
             <Typography fontWeight={700} mb={2}>
               FOLLOW US ON
             </Typography>
             <Box>
-              <IconButton sx={{ color: "#3B2416" }}>
+              {/* <IconButton sx={{ color: "#3B2416" }}>
                 <FacebookIcon />
-              </IconButton>
-              <IconButton sx={{ color: "#3B2416" }}>
+              </IconButton> */}
+              <IconButton
+                component="a"
+                href="https://instagram.com/al_qari_khajoor"
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{ color: "#3B2416" }}
+              >
                 <InstagramIcon />
               </IconButton>
-              <IconButton sx={{ color: "#3B2416" }}>
+
+              {/* <IconButton sx={{ color: "#3B2416" }}>
                 <YouTubeIcon />
-              </IconButton>
+              </IconButton> */}
             </Box>
           </Grid>
         </Grid>

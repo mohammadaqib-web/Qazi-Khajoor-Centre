@@ -1,6 +1,7 @@
 const Product = require("../models/product.model");
 const Category = require("../models/category.model");
 const cloudinary = require("../config/cloudinary");
+const { default: mongoose } = require("mongoose");
 
 exports.createProduct = async (req, res) => {
   try {
@@ -180,4 +181,20 @@ exports.getProductsByCategory = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
+};
+
+exports.getRandomProducts = async (req, res) => {
+  const { exclude } = req.query;
+
+  const matchStage = exclude
+    ? { $match: { _id: { $ne: new mongoose.Types.ObjectId(exclude) } } }
+    : null;
+
+  const pipeline = [];
+  if (matchStage) pipeline.push(matchStage);
+
+  pipeline.push({ $sample: { size: 4 } });
+
+  const products = await Product.aggregate(pipeline);
+  res.json(products);
 };
