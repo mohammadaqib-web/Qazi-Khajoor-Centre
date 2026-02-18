@@ -206,7 +206,13 @@ const SingleProduct = () => {
             </Box>
 
             {/* Stock Info */}
-            <Typography mt={2} color="text.secondary">
+            <Typography
+              mt={2}
+              sx={{
+                color: selectedSize?.stock > 0 ? "text.secondary" : "red",
+                fontWeight: selectedSize?.stock > 0 ? 400 : 600,
+              }}
+            >
               {selectedSize?.stock > 0
                 ? `${selectedSize.stock} items in stock`
                 : "Out of stock"}

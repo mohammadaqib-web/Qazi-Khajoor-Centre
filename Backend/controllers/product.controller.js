@@ -50,11 +50,65 @@ exports.createProduct = async (req, res) => {
   }
 };
 
+//admin
 exports.getAllProducts = async (req, res) => {
   try {
     const products = await Product.find().populate("category", "name");
 
     res.json(products);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+//user
+exports.getAllProductsUser = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 12;
+    const minPrice = parseInt(req.query.minPrice) || 0;
+    const maxPrice = parseInt(req.query.maxPrice) || 100000;
+    const category = req.query.category;
+    const inStock = req.query.inStock === "true";
+
+    const skip = (page - 1) * limit;
+
+    let filter = {
+      sizes: {
+        $elemMatch: {
+          price: { $gte: minPrice, $lte: maxPrice },
+        },
+      },
+    };
+
+    if (category) {
+      filter.category = category;
+    }
+
+    // ✅ In Stock filter
+    if (inStock) {
+      filter.sizes = {
+        $elemMatch: {
+          price: { $gte: minPrice, $lte: maxPrice },
+          stock: { $gt: 0 },
+        },
+      };
+    }
+
+    const totalProducts = await Product.countDocuments(filter);
+
+    const products = await Product.find(filter)
+      .populate("category", "name")
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    res.json({
+      currentPage: page,
+      totalPages: Math.ceil(totalProducts / limit),
+      totalProducts,
+      products,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -145,25 +199,30 @@ exports.getProductsByCategory = async (req, res) => {
   try {
     const { categoryId } = req.params;
 
-    // Pagination query params
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = parseInt(req.query.limit) || 12;
+    const minPrice = parseInt(req.query.minPrice) || 0;
+    const maxPrice = parseInt(req.query.maxPrice) || 100000;
 
     const skip = (page - 1) * limit;
 
-    // Check category exists
     const categoryExists = await Category.findById(categoryId);
     if (!categoryExists) {
       return res.status(404).json({ message: "Category not found" });
     }
 
-    // Get total count
-    const totalProducts = await Product.countDocuments({
+    const filter = {
       category: categoryId,
-    });
+      sizes: {
+        $elemMatch: {
+          price: { $gte: minPrice, $lte: maxPrice },
+        },
+      },
+    };
 
-    // Get paginated products
-    const products = await Product.find({ category: categoryId })
+    const totalProducts = await Product.countDocuments(filter);
+
+    const products = await Product.find(filter)
       .populate("category", "name")
       .skip(skip)
       .limit(limit)
@@ -174,8 +233,6 @@ exports.getProductsByCategory = async (req, res) => {
       currentPage: page,
       totalPages: Math.ceil(totalProducts / limit),
       totalProducts,
-      hasNextPage: page * limit < totalProducts,
-      hasPrevPage: page > 1,
       products,
     });
   } catch (error) {

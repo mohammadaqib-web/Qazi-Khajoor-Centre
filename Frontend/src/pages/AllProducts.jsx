@@ -23,31 +23,38 @@ import FilterListIcon from "@mui/icons-material/FilterList";
 import CloseIcon from "@mui/icons-material/Close";
 import bgPattern from "../assets/bg.png";
 import firstImg from "../assets/dates.png";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import axios from "axios";
+import { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { useOutletContext } from "react-router-dom";
 
-const products = Array.from({ length: 12 }, (_, i) => ({
-  id: i,
-  title: "Holy Ajwa Jumbo Dates Premium Quality",
-  price: "From Rs. 525",
-  image: firstImg,
-  isNew: true,
-}));
+const API = import.meta.env.VITE_APP_API;
 
 const AllProducts = () => {
+  const { categories } = useOutletContext();
+  const navigate = useNavigate();
+  const [products, setProducts] = useState([]);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(false);
   const { category, id } = useParams();
   const isMobile = useMediaQuery("(max-width:900px)");
   const [openFilter, setOpenFilter] = useState(false);
-  const [page, setPage] = useState(1);
-  const [price, setPrice] = useState([0, 7500]);
-  const [tempPrice, setTempPrice] = useState([0, 7500]);
 
-  const productsPerPage = 12;
-  const totalPages = Math.ceil(products.length / productsPerPage);
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const paginatedProducts = products.slice(
-    (page - 1) * productsPerPage,
-    page * productsPerPage,
-  );
+  const pageParam = parseInt(searchParams.get("page")) || 1;
+  const minParam = parseInt(searchParams.get("minPrice")) || 0;
+  const maxParam = parseInt(searchParams.get("maxPrice")) || 7500;
+  const inStockParam = searchParams.get("inStock");
+
+  const [page, setPage] = useState(pageParam);
+  const [price, setPrice] = useState([minParam, maxParam]);
+  const [tempPrice, setTempPrice] = useState([minParam, maxParam]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [searchParams, id]);
 
   const FilterContent = () => (
     <Box sx={{ p: 3, width: 280 }}>
@@ -55,18 +62,11 @@ const AllProducts = () => {
         FILTER
       </Typography>
       <Divider sx={{ borderColor: "#d4a373b9", mt: -1, borderWidth: 1 }} />
-
-      {/* <Typography fontSize={14} fontWeight={600}>
-        Availability
-      </Typography>
-      <FormControlLabel control={<Checkbox />} label="In stock" />
-      <FormControlLabel control={<Checkbox />} label="Out of stock" /> */}
-
       <Typography
         fontSize={16}
         fontWeight={600}
         mt={3}
-        // sx={{ color: "#3B2416" }}
+        sx={{ textTransform: "uppercase", color: "#3B2416" }}
       >
         Price
       </Typography>
@@ -92,8 +92,104 @@ const AllProducts = () => {
       <Typography sx={{ mt: 0 }}>
         Price: ₹ {tempPrice[0]} – ₹ {tempPrice[1]}
       </Typography>
+
+      <Typography
+        fontSize={16}
+        fontWeight={600}
+        mt={4}
+        sx={{ textTransform: "uppercase", color: "#3B2416" }}
+      >
+        Availability
+      </Typography>
+
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={searchParams.get("inStock") === "true"}
+            sx={{
+              color: "#3B2416",
+              "&.Mui-checked": { color: "#3B2416" },
+            }}
+            onChange={() => {
+              const params = new URLSearchParams(searchParams);
+
+              if (searchParams.get("inStock") === "true") {
+                params.delete("inStock");
+              } else {
+                params.set("inStock", "true");
+              }
+
+              params.set("page", 1);
+
+              setSearchParams(params);
+            }}
+          />
+        }
+        label="In Stock"
+      />
+
+      {!id && (
+        <>
+          <Typography
+            fontSize={16}
+            fontWeight={600}
+            mt={3}
+            sx={{ textTransform: "uppercase", color: "#3B2416" }}
+          >
+            Category
+          </Typography>
+
+          <Box sx={{ display: "flex", flexDirection: "column", mt: 1 }}>
+            {categories?.map((cat) => (
+              <FormControlLabel
+                key={cat._id}
+                control={
+                  <Checkbox
+                    checked={searchParams.get("category") === cat._id}
+                    sx={{
+                      color: "#3B2416",
+                      "&.Mui-checked": {
+                        color: "#3B2416",
+                      },
+                    }}
+                    onChange={() => {
+                      const params = new URLSearchParams(searchParams);
+                      const currentCategory = searchParams.get("category");
+
+                      if (currentCategory === cat._id) {
+                        params.delete("category");
+                      } else {
+                        params.set("category", cat._id);
+                      }
+
+                      params.set("page", 1);
+
+                      setSearchParams(params);
+                    }}
+                  />
+                }
+                label={cat.name
+                  .split(" ")
+                  .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                  .join(" ")}
+              />
+            ))}
+          </Box>
+        </>
+      )}
+
       <Button
         fullWidth
+        onClick={() => {
+          setPage(1);
+          setPrice(tempPrice);
+
+          setSearchParams({
+            page: 1,
+            minPrice: tempPrice[0],
+            maxPrice: tempPrice[1],
+          });
+        }}
         sx={{
           mt: 3,
           backgroundColor: "#3B2416",
@@ -105,6 +201,44 @@ const AllProducts = () => {
       </Button>
     </Box>
   );
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+
+      const pageParam = searchParams.get("page") || 1;
+      const minParam = searchParams.get("minPrice") || 0;
+      const maxParam = searchParams.get("maxPrice") || 7500;
+      const categoryParam = searchParams.get("category");
+
+      let url = "";
+
+      if (id) {
+        url = `${API}/products/category/${id}?page=${pageParam}&limit=12&minPrice=${minParam}&maxPrice=${maxParam}`;
+      } else {
+        url = `${API}/products/user?page=${pageParam}&limit=12&minPrice=${minParam}&maxPrice=${maxParam}`;
+
+        if (categoryParam) {
+          url += `&category=${categoryParam}`;
+        }
+
+        if (inStockParam === "true") {
+          url += `&inStock=true`;
+        }
+      }
+
+      const { data } = await axios.get(url);
+
+      setProducts(data.products);
+      setTotalPages(data.totalPages);
+      setPage(Number(pageParam));
+      setPrice([Number(minParam), Number(maxParam)]);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Box
@@ -241,8 +375,14 @@ const AllProducts = () => {
               )}
 
               <Grid container spacing={3}>
-                {paginatedProducts.map((product) => (
-                  <Grid key={product.id} size={{ xs: 6, md: 4 }}>
+                {products?.map((product) => (
+                  <Grid
+                    key={product._id}
+                    size={{ xs: 6, md: 4 }}
+                    onClick={() => {
+                      navigate(`/product/${product._id}`);
+                    }}
+                  >
                     <Card
                       elevation={4}
                       sx={{
@@ -269,11 +409,12 @@ const AllProducts = () => {
                       >
                         <CardMedia
                           component="img"
-                          image={product.image}
-                          alt={product.title}
+                          image={product.images?.url}
+                          alt={product.name}
                           className="product-image"
                           sx={{
-                            maxHeight: 220,
+                            minHeight: 200,
+                            maxHeight: 200,
                             objectFit: "contain",
                             p: 2,
                             transition: "transform 0.4s ease",
@@ -293,10 +434,15 @@ const AllProducts = () => {
                             fontSize: 14,
                             fontWeight: 700,
                             minHeight: 42,
-                            // color: "#3B2416",
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            color: "#3B2416",
                           }}
                         >
-                          {product.title}
+                          {product.name}
                         </Typography>
 
                         <Typography
@@ -307,7 +453,7 @@ const AllProducts = () => {
                             color: "#3B2416",
                           }}
                         >
-                          {product.price}
+                          {`From ₹ ${Math.min(...product.sizes.map((s) => s.price))}`}
                         </Typography>
                       </CardContent>
                     </Card>
@@ -320,7 +466,14 @@ const AllProducts = () => {
                 <Pagination
                   count={totalPages}
                   page={page}
-                  onChange={(e, value) => setPage(value)}
+                  onChange={(e, value) => {
+                    setPage(value);
+                    setSearchParams({
+                      page: value,
+                      minPrice: price[0],
+                      maxPrice: price[1],
+                    });
+                  }}
                   sx={{
                     "& .Mui-selected": {
                       backgroundColor: "#d4a373 !important",

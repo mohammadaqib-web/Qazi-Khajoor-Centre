@@ -70,7 +70,10 @@ const ProductsMegaMenu = ({ categories }) => {
                 cursor: "pointer",
                 "&:hover": { color: "#C59A3D" },
               }}
-              onClick={() => navigate(`/allProducts`)}
+              onClick={() => {
+                navigate(`/allProducts`);
+                handleClickAway();
+              }}
             >
               ALL PRODUCTS
             </Typography>
@@ -103,11 +106,12 @@ const ProductsMegaMenu = ({ categories }) => {
                               textTransform: "uppercase",
                               "&:hover": { color: "#C59A3D" },
                             }}
-                            onClick={() =>
+                            onClick={() => {
                               navigate(
                                 `/${encodeURIComponent(item.name)}/${item._id}`,
-                              )
-                            }
+                              );
+                              handleClickAway();
+                            }}
                           >
                             {item.name}
                           </Typography>

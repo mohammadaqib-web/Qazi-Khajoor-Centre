@@ -6,7 +6,7 @@ import axios from "axios";
 
 const NavbarLayout = () => {
   const [categories, setCategories] = useState([]);
-  
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -25,7 +25,7 @@ const NavbarLayout = () => {
   return (
     <>
       <Navbar categories={categories} setCategories={setCategories} />
-      <Outlet />
+      <Outlet context={{ categories }} />
       <Footer categories={categories} setCategories={setCategories} />
     </>
   );
