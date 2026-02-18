@@ -1,12 +1,82 @@
 const Order = require("../models/order.model");
+const Razorpay = require("razorpay");
+const Product = require("../models/product.model");
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_SECRET,
+});
+
+exports.createRazorpayOrder = async (req, res) => {
+  try {
+    const options = {
+      amount: req.body.amount * 100, // convert to paisa
+      currency: "INR",
+      receipt: `receipt_${Date.now()}`,
+    };
+
+    const order = await razorpay.orders.create(options);
+
+    res.json(order);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 exports.createOrder = async (req, res) => {
   try {
+    const { orderItems, totalAmount, payment, shippingAddress } = req.body;
+
+    if (shippingAddress.country !== "India") {
+      return res.status(400).json({
+        message: "We only deliver inside India",
+      });
+    }
+
+    const isBallia = shippingAddress.city.toLowerCase() === "ballia";
+
+    if (payment.paymentMethod === "cod" && !isBallia) {
+      return res.status(400).json({
+        message: "Cash on Delivery is available only in Ballia",
+      });
+    }
+
+    for (const item of orderItems) {
+      const product = await Product.findById(item.product);
+
+      if (!product) {
+        return res.status(404).json({
+          message: `Product not found`,
+        });
+      }
+
+      const sizeIndex = product.sizes.findIndex((s) => s.size === item.size);
+
+      if (sizeIndex === -1) {
+        return res.status(400).json({
+          message: `Size not available`,
+        });
+      }
+
+      if (product.sizes[sizeIndex].stock < item.quantity) {
+        return res.status(400).json({
+          message: `Not enough stock for ${product.name}`,
+        });
+      }
+
+      product.sizes[sizeIndex].stock -= item.quantity;
+
+      product.stock -= item.quantity;
+
+      await product.save();
+    }
+
     const order = await Order.create({
       user: req.user.id,
-      orderItems: req.body.orderItems,
-      totalAmount: req.body.totalAmount,
-      payment: req.body.payment,
+      orderItems,
+      totalAmount,
+      shippingAddress,
+      payment,
     });
 
     res.status(201).json(order);

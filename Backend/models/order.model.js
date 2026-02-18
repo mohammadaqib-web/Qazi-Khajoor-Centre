@@ -23,10 +23,21 @@ const orderSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    payment: {
-      paymentId: {
+    shippingAddress: {
+      // fullName: { type: String, required: true },
+      // phone: { type: String, required: true },
+      addressLine1: { type: String, required: true },
+      addressLine2: String,
+      city: { type: String, required: true },
+      state: { type: String, required: true },
+      pincode: { type: String, required: true },
+      country: {
         type: String,
+        default: "India",
       },
+    },
+    payment: {
+      paymentId: String,
       paymentMethod: {
         type: String,
         enum: ["razorpay", "cod"],

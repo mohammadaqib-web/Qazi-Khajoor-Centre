@@ -14,13 +14,15 @@ import {
   useTheme,
   useMediaQuery,
   Divider,
+  TextField,
 } from "@mui/material";
 
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
-
+import CircularProgress from "@mui/material/CircularProgress";
+import { toast } from "react-toastify";
 import bgPattern from "../assets/bg.png";
 import ProductsMegaMenu from "./ProductsMegaMenu";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
@@ -58,10 +60,14 @@ import {
   increaseQty,
   decreaseQty,
   removeFromCart,
+  clearCart,
 } from "../features/auth/cartSlice";
 import CloseIcon from "@mui/icons-material/Close";
+import validator from "validator";
+import userTokenValidity from "../utils/UserTokenValidity";
 
 const Navbar = ({ categories }) => {
+  const [loading, setLoading] = useState(false);
   const { token } = useSelector((state) => state.auth);
   const { cartItems } = useSelector((state) => state.cart);
   const dispatch = useDispatch();
@@ -70,10 +76,27 @@ const Navbar = ({ categories }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const navigate = useNavigate();
   const location = useLocation();
+  const isTokenValid = userTokenValidity();
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [validatedCart, setValidatedCart] = useState([]);
+
+  const [checkoutStep, setCheckoutStep] = useState("cart");
+  // cart | address | payment
+
+  const [address, setAddress] = useState({
+    // fullName: "",
+    // phone: "",
+    addressLine1: "",
+    // addressLine2: "",
+    city: "",
+    state: "",
+    pincode: "",
+    country: "India",
+  });
+
+  const [addressError, setAddressError] = useState("");
 
   const isProductsActive = location.pathname.startsWith("/products");
 
@@ -105,8 +128,151 @@ const Navbar = ({ categories }) => {
     (acc, item) => acc + item.price * item.availableQty,
     0,
   );
+  const totalAmount = subtotal;
+  const API = import.meta.env.VITE_APP_API;
+  const orderItems = validatedCart.map((item) => ({
+    product: item.productId,
+    name: item.name,
+    size: item.size,
+    quantity: item.availableQty,
+    price: item.price,
+  }));
 
   const hasOutOfStock = validatedCart.some((item) => item.stock === 0);
+
+  const getVerifiedCityName = async (pincode, city) => {
+    try {
+      const res = await axios.get(
+        `https://api.postalpincode.in/pincode/${pincode}`,
+      );
+
+      if (res.data[0].Status !== "Success") return false;
+
+      return res.data[0].PostOffice.some(
+        (po) =>
+          po.Name.toLowerCase() === city.toLowerCase() ||
+          po.District.toLowerCase() === city.toLowerCase(),
+      );
+    } catch {
+      return false;
+    }
+  };
+
+  const validateAddress = async () => {
+    if (!address.city || !address.pincode) {
+      return "City and Pincode required";
+    }
+
+    const isValid = await getVerifiedCityName(address.pincode, address.city);
+
+    if (!isValid) {
+      return "City does not match pincode";
+    }
+
+    return null;
+  };
+
+  const handlePayment = async () => {
+    if (loading) return; // prevent multiple clicks
+    setLoading(true);
+
+    try {
+      if (!token) {
+        navigate("/auth");
+        return;
+      }
+
+      if (validatedCart.length === 0) return;
+
+      const { data } = await axios.post(
+        `${API}/orders/razorpay`,
+        { amount: totalAmount },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY,
+        amount: data.amount,
+        currency: "INR",
+        order_id: data.id,
+        handler: async function (response) {
+          await axios.post(
+            `${API}/orders`,
+            {
+              orderItems,
+              totalAmount,
+              shippingAddress: address,
+              payment: {
+                paymentId: response.razorpay_payment_id,
+                paymentMethod: "razorpay",
+                paymentStatus: "paid",
+              },
+            },
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            },
+          );
+
+          handleCartClose();
+          dispatch(clearCart());
+          toast.success("Order placed successfully 🎉");
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCOD = async () => {
+    if (loading) return;
+    setLoading(true);
+
+    try {
+      if (address.city.toLowerCase() !== "ballia") {
+        toast.warning("COD available only in Ballia");
+        return;
+      }
+
+      await axios.post(
+        `${API}/orders`,
+        {
+          orderItems,
+          totalAmount,
+          shippingAddress: address,
+          payment: {
+            paymentMethod: "cod",
+            paymentStatus: "pending",
+          },
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      handleCartClose();
+      toast.success("Order placed successfully 🎉");
+      dispatch(clearCart());
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCartClose = () => {
+    // handleCartClose();
+    setCartOpen(false);
+    setCheckoutStep("cart"); // reset step
+    setAddressError(""); // optional reset
+    setLoading(false); // safety reset
+  };
 
   /* ---------------- UI ---------------- */
   return (
@@ -201,7 +367,7 @@ const Navbar = ({ categories }) => {
       <Drawer
         anchor="right"
         open={cartOpen}
-        onClose={() => setCartOpen(false)}
+        onClose={() => handleCartClose()}
         PaperProps={{
           sx: { width: { xs: "100%", sm: 420 }, p: 3 },
         }}
@@ -211,149 +377,362 @@ const Navbar = ({ categories }) => {
             Shopping Cart ({validatedCart.length})
           </Typography>
 
-          <IconButton onClick={() => setCartOpen(false)}>
+          <IconButton onClick={() => handleCartClose()}>
             <CloseIcon />
           </IconButton>
         </Box>
 
         <Divider sx={{ my: 3 }} />
 
-        {validatedCart.length === 0 ? (
-          <Typography textAlign="center">Your cart is empty</Typography>
-        ) : (
-          validatedCart.map((item) => (
-            <Box key={item.productId + item.sizeId} mb={3}>
-              <Box display="flex" gap={2}>
-                <Box
-                  component="img"
-                  src={item.image}
-                  sx={{
-                    width: 90,
-                    height: 90,
-                    borderRadius: 2,
-                    objectFit: "cover",
-                  }}
-                />
-
-                <Box flex={1}>
-                  <Typography fontWeight={600}>{item.name}</Typography>
-
-                  <Typography fontSize={14}>Weight: {item.size}</Typography>
-
-                  {/* STOCK STATUS */}
-                  {item.stock === 0 && (
-                    <Typography
-                      color="error"
-                      fontSize={13}
-                      fontWeight={600}
-                      mt={1}
-                    >
-                      Out of Stock
-                    </Typography>
-                  )}
-
-                  {item.stock > 0 && item.stock < 5 && (
-                    <Typography color="warning.main" fontSize={13} mt={1}>
-                      Only {item.stock} left
-                    </Typography>
-                  )}
-
-                  {/* QTY CONTROLS */}
-                  <Box
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="space-between"
-                    mt={2}
-                  >
+        {checkoutStep === "cart" && (
+          <>
+            {validatedCart.length === 0 ? (
+              <Typography textAlign="center">Your cart is empty</Typography>
+            ) : (
+              validatedCart.map((item) => (
+                <Box key={item.productId + item.sizeId} mb={3}>
+                  <Box display="flex" gap={2}>
                     <Box
-                      display="flex"
-                      alignItems="center"
-                      border="1px solid #ddd"
-                      borderRadius={1}
-                    >
-                      <IconButton
-                        size="small"
-                        onClick={() =>
-                          dispatch(
-                            decreaseQty({
-                              productId: item.productId,
-                              sizeId: item.sizeId,
-                            }),
-                          )
-                        }
-                      >
-                        −
-                      </IconButton>
-
-                      <Typography px={1.5}>{item.availableQty}</Typography>
-
-                      <IconButton
-                        size="small"
-                        disabled={item.availableQty >= item.stock}
-                        onClick={() =>
-                          dispatch(
-                            increaseQty({
-                              productId: item.productId,
-                              sizeId: item.sizeId,
-                            }),
-                          )
-                        }
-                      >
-                        +
-                      </IconButton>
-                    </Box>
-
-                    <Typography
-                      onClick={() =>
-                        dispatch(
-                          removeFromCart({
-                            productId: item.productId,
-                            sizeId: item.sizeId,
-                          }),
-                        )
-                      }
+                      component="img"
+                      src={item.image}
                       sx={{
-                        cursor: "pointer",
-                        fontSize: 14,
-                        textDecoration: "underline",
-                        color: "#2E3A8C",
+                        width: 90,
+                        height: 90,
+                        borderRadius: 2,
+                        objectFit: "cover",
                       }}
-                    >
-                      Remove
-                    </Typography>
+                    />
+
+                    <Box flex={1}>
+                      <Typography fontWeight={600}>{item.name}</Typography>
+
+                      <Typography fontSize={14}>Weight: {item.size}</Typography>
+
+                      {/* STOCK STATUS */}
+                      {item.stock === 0 && (
+                        <Typography
+                          color="error"
+                          fontSize={13}
+                          fontWeight={600}
+                          mt={1}
+                        >
+                          Out of Stock
+                        </Typography>
+                      )}
+
+                      {item.stock > 0 && item.stock < 5 && (
+                        <Typography color="warning.main" fontSize={13} mt={1}>
+                          Only {item.stock} left
+                        </Typography>
+                      )}
+
+                      {/* QTY CONTROLS */}
+                      <Box
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="space-between"
+                        mt={2}
+                      >
+                        <Box
+                          display="flex"
+                          alignItems="center"
+                          border="1px solid #ddd"
+                          borderRadius={1}
+                        >
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              dispatch(
+                                decreaseQty({
+                                  productId: item.productId,
+                                  sizeId: item.sizeId,
+                                }),
+                              )
+                            }
+                          >
+                            −
+                          </IconButton>
+
+                          <Typography px={1.5}>{item.availableQty}</Typography>
+
+                          <IconButton
+                            size="small"
+                            disabled={item.availableQty >= item.stock}
+                            onClick={() =>
+                              dispatch(
+                                increaseQty({
+                                  productId: item.productId,
+                                  sizeId: item.sizeId,
+                                }),
+                              )
+                            }
+                          >
+                            +
+                          </IconButton>
+                        </Box>
+
+                        <Typography
+                          onClick={() =>
+                            dispatch(
+                              removeFromCart({
+                                productId: item.productId,
+                                sizeId: item.sizeId,
+                              }),
+                            )
+                          }
+                          sx={{
+                            cursor: "pointer",
+                            fontSize: 14,
+                            textDecoration: "underline",
+                            color: "#3B2416",
+                          }}
+                        >
+                          Remove
+                        </Typography>
+                      </Box>
+
+                      <Typography mt={1} fontWeight={700} color="#3B2416">
+                        Rs. {item.price * item.availableQty}
+                      </Typography>
+                    </Box>
                   </Box>
 
-                  <Typography mt={1} fontWeight={700} color="#2E3A8C">
-                    Rs. {item.price * item.availableQty}
-                  </Typography>
+                  <Divider sx={{ mt: 3 }} />
                 </Box>
-              </Box>
-
-              <Divider sx={{ mt: 3 }} />
-            </Box>
-          ))
+              ))
+            )}
+          </>
         )}
 
         {/* SUBTOTAL */}
-        <Box mt="auto">
-          <Box display="flex" justifyContent="space-between">
-            <Typography fontWeight={600}>Subtotal</Typography>
-            <Typography fontWeight={700}>Rs. {subtotal}</Typography>
-          </Box>
+        {checkoutStep === "cart" && (
+          <Box mt="auto">
+            <Box display="flex" justifyContent="space-between">
+              <Typography fontWeight={600}>Subtotal</Typography>
+              <Typography fontWeight={700}>Rs. {subtotal}</Typography>
+            </Box>
 
-          <Button
-            fullWidth
-            variant="contained"
-            disabled={hasOutOfStock}
+            <Button
+              fullWidth
+              variant="contained"
+              disabled={hasOutOfStock || validatedCart.length === 0}
+              sx={{
+                backgroundColor: "#3B2416",
+                mt: 2,
+                py: 1.5,
+              }}
+              onClick={() => {
+                if (!token || !isTokenValid) {
+                  navigate("/auth");
+                  return;
+                }
+
+                if (validatedCart.length === 0) {
+                  toast.error("Your cart is empty");
+                  return;
+                }
+
+                if (hasOutOfStock) {
+                  toast.error("Some products are out of stock");
+                  return;
+                }
+
+                setCheckoutStep("address");
+              }}
+            >
+              Buy Now
+            </Button>
+          </Box>
+        )}
+
+        {checkoutStep === "address" && (
+          <Box mt={2}>
+            <Typography variant="h6" fontWeight={700} mb={3}>
+              Shipping Address
+            </Typography>
+
+            <Box display="flex" flexDirection="column" gap={2}>
+              {/* <TextField
+                label="Full Name"
+                fullWidth
+                value={address.fullName}
+                onChange={(e) =>
+                  setAddress({ ...address, fullName: e.target.value })
+                }
+              />
+
+              <TextField
+                label="Phone Number"
+                fullWidth
+                value={address.phone}
+                onChange={(e) =>
+                  setAddress({ ...address, phone: e.target.value })
+                }
+              /> */}
+
+              <TextField
+                label="Address"
+                fullWidth
+                value={address.addressLine1}
+                onChange={(e) =>
+                  setAddress({ ...address, addressLine1: e.target.value })
+                }
+              />
+
+              {/* <TextField
+                label="Address Line 2"
+                fullWidth
+                value={address.addressLine2}
+                onChange={(e) =>
+                  setAddress({ ...address, addressLine2: e.target.value })
+                }
+              /> */}
+
+              <Box display="flex" gap={2}>
+                <TextField
+                  label="City"
+                  fullWidth
+                  value={address.city}
+                  onChange={(e) =>
+                    setAddress({ ...address, city: e.target.value })
+                  }
+                />
+
+                <TextField
+                  label="State"
+                  fullWidth
+                  value={address.state}
+                  onChange={(e) =>
+                    setAddress({ ...address, state: e.target.value })
+                  }
+                />
+              </Box>
+
+              <TextField
+                label="Pincode"
+                fullWidth
+                value={address.pincode}
+                onChange={(e) =>
+                  setAddress({ ...address, pincode: e.target.value })
+                }
+              />
+            </Box>
+
+            {addressError && (
+              <Typography color="error" mt={2}>
+                {addressError}
+              </Typography>
+            )}
+
+            <Box display="flex" gap={2} mt={3}>
+              <Button
+                fullWidth
+                variant="outlined"
+                onClick={() => setCheckoutStep("cart")}
+                sx={{
+                  color: "#3B2416",
+                  borderColor: "#3B2416",
+                  "&:hover": {
+                    borderColor: "#3B2416",
+                    backgroundColor: "rgba(59,36,22,0.05)",
+                  },
+                }}
+              >
+                Back
+              </Button>
+
+              <Button
+                fullWidth
+                variant="contained"
+                disabled={loading}
+                sx={{ backgroundColor: "#3B2416" }}
+                onClick={async () => {
+                  if (loading) return;
+                  setLoading(true);
+
+                  const error = await validateAddress();
+
+                  if (error) {
+                    setAddressError(error);
+                    setLoading(false);
+                    return;
+                  }
+
+                  setCheckoutStep("payment");
+                  setLoading(false);
+                }}
+              >
+                {loading ? (
+                  <CircularProgress size={22} sx={{ color: "#3B2416" }} />
+                ) : (
+                  "Continue"
+                )}
+              </Button>
+            </Box>
+          </Box>
+        )}
+
+        {checkoutStep === "payment" && (
+          <Box mt={2}>
+            <Typography variant="h6" fontWeight={700} mb={3}>
+              Payment Options
+            </Typography>
+
+            <Button
+              fullWidth
+              variant="contained"
+              disabled={loading}
+              sx={{
+                backgroundColor: "#3B2416",
+                mb: 2,
+                py: 1.5,
+              }}
+              onClick={handlePayment}
+            >
+              {loading ? (
+                <CircularProgress size={22} sx={{ color: "#3B2416" }} />
+              ) : (
+                "Pay Online"
+              )}
+            </Button>
+
+            {address.city.toLowerCase() === "ballia" && (
+              <Button
+                fullWidth
+                variant="outlined"
+                disabled={loading}
+                sx={{ py: 1.5 }}
+                onClick={handleCOD}
+              >
+                {loading ? <CircularProgress size={22} /> : "Cash On Delivery"}
+              </Button>
+            )}
+
+            <Button
+              fullWidth
+              variant="text"
+              sx={{ mt: 2, color: "#3B2416" }}
+              onClick={() => setCheckoutStep("address")}
+            >
+              Back
+            </Button>
+          </Box>
+        )}
+        {loading && (
+          <Box
             sx={{
-              backgroundColor: "#2E3A8C",
-              mt: 2,
-              py: 1.5,
+              position: "absolute",
+              inset: 0,
+              backgroundColor: "rgba(255,255,255,0.6)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 2000,
             }}
           >
-            Buy Now
-          </Button>
-        </Box>
+            <CircularProgress />
+          </Box>
+        )}
       </Drawer>
 
       {/* MOBILE DRAWER */}

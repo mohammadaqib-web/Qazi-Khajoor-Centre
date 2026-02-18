@@ -26,6 +26,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import { addToCart } from "../features/auth/cartSlice";
+import ProductCheckoutModal from "../components/ProductCheckoutModal";
 
 const API = import.meta.env.VITE_APP_API;
 
@@ -35,6 +36,7 @@ const SingleProduct = () => {
 
   const dispatch = useDispatch();
 
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [product, setProduct] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [selectedSize, setSelectedSize] = useState(null);
@@ -237,6 +239,7 @@ const SingleProduct = () => {
                 variant="contained"
                 disabled={selectedSize?.stock === 0}
                 sx={{ backgroundColor: "#2E3A8C" }}
+                onClick={() => setCheckoutOpen(true)}
               >
                 Buy Now
               </Button>
@@ -451,6 +454,14 @@ const SingleProduct = () => {
       </Container>
 
       <SuggestedProducts currentProductId={id} />
+
+      <ProductCheckoutModal
+        open={checkoutOpen}
+        onClose={() => setCheckoutOpen(false)}
+        product={product}
+        selectedSize={selectedSize}
+        qty={qty}
+      />
     </Box>
   );
 };

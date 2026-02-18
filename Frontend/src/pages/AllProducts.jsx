@@ -130,20 +130,69 @@ const AllProducts = () => {
         >
           <Typography
             sx={{
+              position: "relative",
               color: "white",
               fontSize: { xs: 26, md: 36 },
               fontWeight: 800,
               letterSpacing: 2,
-              // backgroundColor: "rgba(255,255,255,0.6)",
               backdropFilter: "blur(5px)",
-              // textDecoration: "underline #6F4E37 5px",
-              p: 2,
+              p: 1.5,
               textTransform: "uppercase",
+              display: "inline-block",
             }}
           >
+            {/* TOP 20% from LEFT */}
+            <Box
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "40%",
+                height: "3px",
+                backgroundColor: "#d4a373b9",
+              }}
+            />
+
+            {/* RIGHT 20% from TOP */}
+            <Box
+              sx={{
+                position: "absolute",
+                bottom: 0,
+                right: 0,
+                width: "3px",
+                height: "40%",
+                backgroundColor: "#d4a373b9",
+              }}
+            />
+
+            {/* BOTTOM 20% from RIGHT */}
+            <Box
+              sx={{
+                position: "absolute",
+                bottom: 0,
+                right: 0,
+                width: "40%",
+                height: "3px",
+                backgroundColor: "#d4a373b9",
+              }}
+            />
+
+            {/* LEFT 20% from TOP */}
+            <Box
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "3px",
+                height: "40%",
+                backgroundColor: "#d4a373b9",
+              }}
+            />
+
             {category || "All Products"}
           </Typography>
-          {!category && (
+
+          {/* {!category && (
             <>
               <Divider
                 sx={{
@@ -163,7 +212,7 @@ const AllProducts = () => {
                 }}
               />
             </>
-          )}
+          )} */}
         </Box>
         <Container maxWidth="lg" sx={{ py: 6 }}>
           <Grid container spacing={4}>
