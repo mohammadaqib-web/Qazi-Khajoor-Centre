@@ -5,7 +5,7 @@ const StorageInfoSection = () => {
     <Box
       sx={{
         backgroundColor: "#F5EDE3",
-        backgroundImage: "url('/assets/bg.png')",
+        backgroundImage: "url('/assets/bg.webp')",
         backgroundRepeat: "repeat",
         py: { xs: 6, md: 10 },
       }}

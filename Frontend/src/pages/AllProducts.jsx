@@ -21,8 +21,7 @@ import {
 } from "@mui/material";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import CloseIcon from "@mui/icons-material/Close";
-import bgPattern from "../assets/bg.png";
-import firstImg from "../assets/dates.png";
+import bgPattern from "../assets/bg.webp";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { useEffect } from "react";

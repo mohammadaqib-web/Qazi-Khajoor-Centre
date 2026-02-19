@@ -20,7 +20,7 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
-import bgPattern from "../assets/bg.png";
+import bgPattern from "../assets/bg.webp";
 import SuggestedProducts from "../components/SuggestedProducts";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";

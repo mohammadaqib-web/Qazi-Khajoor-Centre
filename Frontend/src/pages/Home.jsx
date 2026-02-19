@@ -1,6 +1,6 @@
 import HeroSection from "../components/HeroSection";
 import { Box } from "@mui/material";
-import bgPattern from "../assets/bg.png";
+import bgPattern from "../assets/bg.webp";
 import DatesMain from "../components/DatesMain";
 import AboutStatsSection from "../components/AboutStatsSection";
 import StorageInfoSection from "../components/StorageInfoSection";

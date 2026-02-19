@@ -10,7 +10,7 @@ import {
 // import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 // import { auth } from "../firebase";
 import axios from "axios";
-import bgPattern from "../assets/bg.png";
+import bgPattern from "../assets/bg.webp";
 import { loginSuccess } from "../features/auth/authSlice";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";

@@ -23,7 +23,7 @@ import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import CircularProgress from "@mui/material/CircularProgress";
 import { toast } from "react-toastify";
-import bgPattern from "../assets/bg.png";
+import bgPattern from "../assets/bg.webp";
 import ProductsMegaMenu from "./ProductsMegaMenu";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";

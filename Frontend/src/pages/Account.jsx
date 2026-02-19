@@ -14,7 +14,7 @@ import {
   InputAdornment,
   IconButton,
 } from "@mui/material";
-import bgPattern from "../assets/bg.png";
+import bgPattern from "../assets/bg.webp";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useNavigate } from "react-router-dom";

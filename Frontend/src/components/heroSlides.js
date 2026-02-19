@@ -1,6 +1,6 @@
-import firstImg from '../assets/dates.png'
-import secImg from '../assets/attar.png'
-import thirdImg from '../assets/islamic.png'
+import firstImg from "../assets/dates.webp";
+import secImg from "../assets/attar.webp";
+import thirdImg from "../assets/islamic.webp";
 export const heroSlides = [
   {
     image: firstImg,
@@ -10,7 +10,7 @@ export const heroSlides = [
     cta: "Shop Now",
   },
   {
-    image: "https://images.unsplash.com/photo-1642337241968-48094a7709ea?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    image: secImg,
     thumb: "https://images.unsplash.com/photo-1603048297172-c92544798d98?w=120",
     subtitle: "Handpicked Delicacies,",
     title: "Purely crafted for You",

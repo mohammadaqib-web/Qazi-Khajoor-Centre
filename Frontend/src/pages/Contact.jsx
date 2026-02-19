@@ -7,7 +7,7 @@ import {
   Button,
   Divider,
 } from "@mui/material";
-import bgPattern from "../assets/bg.png";
+import bgPattern from "../assets/bg.webp";
 
 const Contact = () => {
   return (

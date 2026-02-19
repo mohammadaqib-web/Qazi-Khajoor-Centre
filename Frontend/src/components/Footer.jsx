@@ -18,7 +18,7 @@ const Footer = ({ categories }) => {
     <Box
       sx={{
         backgroundColor: "#D4A373",
-        backgroundImage: "url('/assets/bg.png')",
+        backgroundImage: "url('/assets/bg.webp')",
         backgroundRepeat: "repeat",
         color: "#3B2416",
         pt: 6,
