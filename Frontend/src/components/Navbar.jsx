@@ -279,10 +279,12 @@ const Navbar = ({ categories }) => {
     <>
       <AppBar
         position="sticky"
+        color="transparent"
         elevation={0}
         sx={{
           backgroundImage: `url(${bgPattern})`,
-          color: "#3B2416",
+          backgroundRepeat: "repeat",
+          backgroundColor: "#fff",
         }}
       >
         <Toolbar sx={{ justifyContent: "space-between" }}>
@@ -701,8 +703,16 @@ const Navbar = ({ categories }) => {
                 fullWidth
                 variant="outlined"
                 disabled={loading}
-                sx={{ py: 1.5 }}
                 onClick={handleCOD}
+                sx={{
+                  py: 1.5,
+                  color: "#3B2416",
+                  borderColor: "#3B2416",
+                  "&:hover": {
+                    borderColor: "#3B2416",
+                    backgroundColor: "rgba(59,36,22,0.05)",
+                  },
+                }}
               >
                 {loading ? <CircularProgress size={22} /> : "Cash On Delivery"}
               </Button>

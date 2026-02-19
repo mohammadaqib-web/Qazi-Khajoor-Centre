@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Container,
@@ -23,8 +23,10 @@ import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 
 const sections = ["Profile", "Orders", "Change Password", "Logout"];
+import { useSelector } from "react-redux";
+import axios from "axios";
 
-const ProfileSection = () => (
+const ProfileSection = ({ user }) => (
   <>
     <Typography variant="h6" fontWeight={700} mb={3}>
       Profile Information
@@ -32,29 +34,13 @@ const ProfileSection = () => (
 
     <Divider sx={{ backgroundColor: "#fff", borderWidth: 1, mt: -3, mb: 3 }} />
 
-    <Grid
-      container
-      spacing={3}
-      sx={{
-        // target LABEL (first Typography inside Info)
-        "& .MuiTypography-root:first-of-type": {
-          color: "rgba(255,255,255,0.6)", // gray label
-          fontSize: 13,
-        },
-
-        // target VALUE (second Typography)
-        "& .MuiTypography-root:nth-of-type(2)": {
-          color: "#fff",
-          fontWeight: 600,
-        },
-      }}
-    >
+    <Grid container spacing={3}>
       <Grid size={{ xs: 12, md: 6 }}>
-        <Info label="Full Name" value="Mohammad Aqib" />
+        <Info label="Full Name" value={user?.name || "Not added"} />
       </Grid>
 
       <Grid size={{ xs: 12, md: 6 }}>
-        <Info label="Phone Number" value="Not added" />
+        <Info label="Phone Number" value={user?.number || "Not added"} />
       </Grid>
     </Grid>
   </>
@@ -69,7 +55,7 @@ const Info = ({ label, value }) => (
   </Box>
 );
 
-const OrdersSection = () => (
+const OrdersSection = ({ orders }) => (
   <>
     <Typography variant="h6" fontWeight={700} mb={3}>
       My Orders
@@ -78,49 +64,148 @@ const OrdersSection = () => (
     <Box
       sx={{
         display: "flex",
-        // justifyContent: "center",
         alignItems: "center",
         gap: 2,
         flexWrap: "wrap",
       }}
     >
-      {[0, 1, 2, 3].map((item, index) => (
-        <Box sx={{ width: { xs: "100%", sm: 185 } }} key={index}>
-          <Paper sx={{ p: 2, mb: 3 }}>
-            <Grid container spacing={3} alignItems="center">
-              {/* IMAGE LEFT */}
-              <Grid size={{ xs: 12 }}>
-                <Box
-                  component="img"
-                  src="https://images.unsplash.com/photo-1607664608695-45aaa6d621fc"
-                  alt="Product"
-                  sx={{
-                    width: "100%",
-                    // maxWidth: 100,
-                    borderRadius: 2,
-                    objectFit: "contain",
-                  }}
-                />
-              </Grid>
+      {orders?.map((order) =>
+        order.orderItems.map((item) => {
+          const statusStyles = {
+            pending: {
+              bg: "rgba(255, 193, 7, 0.15)",
+              color: "#FFC107",
+            },
+            processing: {
+              bg: "rgba(33, 150, 243, 0.15)",
+              color: "#2196F3",
+            },
+            shipped: {
+              bg: "rgba(156, 39, 176, 0.15)",
+              color: "#9C27B0",
+            },
+            delivered: {
+              bg: "rgba(76, 175, 80, 0.15)",
+              color: "#4CAF50",
+            },
+          };
 
-              {/* DETAILS RIGHT */}
-              <Grid size={{ xs: 12 }} sx={{ mt: -2 }}>
-                <Typography fontWeight={600} sx={{ mb: 1 }}>
-                  Order #{item}
-                </Typography>
-                <Typography fontSize={14}>Amount: ₹1,250</Typography>
-                <Typography fontSize={14}>Status: Delivered</Typography>
-                <Typography fontSize={14}>Payment method: COD</Typography>
-              </Grid>
-            </Grid>
-          </Paper>
-        </Box>
-      ))}
+          const currentStatus =
+            statusStyles[order.status] || statusStyles.pending;
+
+          return (
+            <Box sx={{ width: { xs: "100%", sm: 185 } }} key={item._id}>
+              <Paper sx={{ p: 2, mb: 3 }}>
+                <Grid container spacing={3} alignItems="center">
+                  {/* IMAGE LEFT */}
+                  <Grid size={{ xs: 12 }}>
+                    <Box
+                      component="img"
+                      src={item.product?.images?.url}
+                      alt={item.product?.name}
+                      sx={{
+                        width: "100%",
+                        minHeight: "100px",
+                        maxHeight: "100px",
+                        borderRadius: 2,
+                        objectFit: "contain",
+                      }}
+                    />
+                  </Grid>
+
+                  {/* DETAILS RIGHT */}
+                  <Grid size={{ xs: 12 }} sx={{ mt: -2 }}>
+                    <Typography
+                      fontWeight={600}
+                      sx={{
+                        mb: 1,
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {item.product?.name}
+                    </Typography>
+
+                    <Box mt={1}>
+                      <Typography
+                        fontSize={13}
+                        sx={{ color: "#3B2416", fontWeight: "bold" }}
+                      >
+                        Order ID:{" "}
+                        <span style={{ color: "black", fontWeight: "normal" }}>
+                          #{order._id.slice(-6)}
+                        </span>
+                      </Typography>
+
+                      <Typography
+                        fontSize={13}
+                        sx={{ color: "#3B2416", mt: 0.5, fontWeight: "bold" }}
+                      >
+                        Amount:{" "}
+                        <span style={{ color: "black", fontWeight: "normal" }}>
+                          ₹{order.totalAmount}
+                        </span>
+                      </Typography>
+
+                      <Typography
+                        fontSize={13}
+                        sx={{ color: "#3B2416", mt: 0.5, fontWeight: "bold" }}
+                      >
+                        Payment:{" "}
+                        <span style={{ color: "black", fontWeight: "normal" }}>
+                          {order.payment?.paymentMethod?.toUpperCase() !== "COD"
+                            ? "Online"
+                            : "COD"}
+                        </span>
+                      </Typography>
+
+                      <Box display="flex" mt={0.5} alignItems="center" gap={1}>
+                        <Typography
+                          fontSize={13}
+                          sx={{ color: "#3B2416", fontWeight: "bold" }}
+                        >
+                          Status:
+                        </Typography>
+
+                        <Typography
+                          fontSize={13}
+                          fontWeight={600}
+                          sx={{
+                            px: 1.5,
+                            py: 0.5,
+                            borderRadius: 2,
+                            backgroundColor: currentStatus.bg,
+                            color: currentStatus.color,
+                            textTransform: "capitalize",
+                          }}
+                        >
+                          {order.status}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Grid>
+                </Grid>
+              </Paper>
+            </Box>
+          );
+        }),
+      )}
     </Box>
   </>
 );
 
-const ChangePassword = ({ showPassword, setShowPassword }) => (
+const ChangePassword = ({
+  showPassword,
+  setShowPassword,
+  newPassword,
+  setNewPassword,
+  confirmPassword,
+  setConfirmPassword,
+  handleChangePassword,
+}) => (
   <>
     <Typography variant="h6" fontWeight={700} mb={3}>
       Change Password
@@ -132,6 +217,8 @@ const ChangePassword = ({ showPassword, setShowPassword }) => (
           fullWidth
           // label="New Password"
           placeholder="New Password"
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
           type={showPassword ? "text" : "password"}
           variant="outlined"
           sx={{ backgroundColor: "#fff", borderRadius: 1 }}
@@ -155,6 +242,8 @@ const ChangePassword = ({ showPassword, setShowPassword }) => (
           type={showPassword ? "text" : "password"}
           variant="outlined"
           sx={{ backgroundColor: "#fff", borderRadius: 1 }}
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
         />
       </Grid>
 
@@ -170,6 +259,7 @@ const ChangePassword = ({ showPassword, setShowPassword }) => (
               backgroundColor: "#c08a55",
             },
           }}
+          onClick={handleChangePassword}
         >
           Update Password
         </Button>
@@ -183,6 +273,59 @@ const Account = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { user, token } = useSelector((state) => state.auth);
+
+  const [orders, setOrders] = useState([]);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  useEffect(() => {
+    if (active === "Orders") {
+      fetchOrders();
+    }
+  }, [active]);
+
+  const fetchOrders = async () => {
+    try {
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_APP_API}/orders/my`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      setOrders(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    try {
+      await axios.put(
+        `${import.meta.env.VITE_APP_API}/auth/change-password`,
+        { newPassword },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+
+      toast.success("Password updated successfully");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err) {
+      console.log({ err });
+      toast.error(err.response?.data?.message || "Error updating password");
+    }
+  };
 
   return (
     <Box
@@ -194,9 +337,9 @@ const Account = () => {
           <Grid size={{ xs: 12, md: 3 }}>
             <Paper sx={{ backgroundColor: "#3B2416", color: "#fff" }}>
               <Box sx={{ p: 2 }}>
-                <Typography fontWeight={700}>Mohammad Aqib</Typography>
+                <Typography fontWeight={700}>{user?.name}</Typography>
                 <Typography fontSize={13} color="#ccc">
-                  mohdaqib918@gmail.com
+                  {user?.number}
                 </Typography>
               </Box>
 
@@ -240,12 +383,17 @@ const Account = () => {
           {/* RIGHT CONTENT */}
           <Grid size={{ xs: 12, md: 9 }}>
             <Paper sx={{ p: 4, backgroundColor: "#3B2416", color: "#fff" }}>
-              {active === "Profile" && <ProfileSection />}
-              {active === "Orders" && <OrdersSection />}
+              {active === "Profile" && <ProfileSection user={user} />}
+              {active === "Orders" && <OrdersSection orders={orders} />}
               {active === "Change Password" && (
                 <ChangePassword
                   showPassword={showPassword}
                   setShowPassword={setShowPassword}
+                  newPassword={newPassword}
+                  setNewPassword={setNewPassword}
+                  confirmPassword={confirmPassword}
+                  setConfirmPassword={setConfirmPassword}
+                  handleChangePassword={handleChangePassword}
                 />
               )}
             </Paper>
