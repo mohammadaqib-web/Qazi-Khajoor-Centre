@@ -322,8 +322,9 @@ const AllProducts = () => {
                 backgroundColor: "#d4a373b9",
               }}
             />
-
-            {category || "All Products"}
+            {id
+              ? categories?.find((cat) => cat._id === id)?.name || "Category"
+              : "All Products"}
           </Typography>
 
           {/* {!category && (

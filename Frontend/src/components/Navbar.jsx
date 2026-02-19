@@ -27,7 +27,7 @@ import bgPattern from "../assets/bg.png";
 import ProductsMegaMenu from "./ProductsMegaMenu";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import logoDark from "../assets/logo-dark.png";
+import logoDark from "../assets/logo-dark.webp";
 
 /* ---------------- NAV BUTTON ---------------- */
 const NavButton = ({ to, label, end }) => {
@@ -782,12 +782,15 @@ const Navbar = ({ categories }) => {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
       >
-        <Box width={280} p={2}>
-          <Typography variant="h6" mb={2}>
+        <Box width={280} p={2} mt={-1}>
+          {/* <Typography variant="h6" mb={2}>
             QKC
-          </Typography>
+          </Typography> */}
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
+            <img src={logoDark} width={"120px"} />
+          </Box>
 
-          <List>
+          <List sx={{ mt: -2 }}>
             <ListItem
               component={NavLink}
               to="/"
@@ -795,6 +798,7 @@ const Navbar = ({ categories }) => {
               sx={{
                 "&.active": { backgroundColor: "#D4A373" },
                 color: "#3B2416",
+                WebkitTapHighlightColor: "transparent",
               }}
               onClick={() => setDrawerOpen(false)}
             >
@@ -807,6 +811,7 @@ const Navbar = ({ categories }) => {
               sx={{
                 "&.active": { backgroundColor: "#D4A373" },
                 color: "#3B2416",
+                WebkitTapHighlightColor: "transparent",
               }}
               onClick={() => setDrawerOpen(false)}
             >
@@ -821,6 +826,7 @@ const Navbar = ({ categories }) => {
                 sx={{
                   // "&.active": { backgroundColor: "#D4A373" },
                   color: "#3B2416",
+                  WebkitTapHighlightColor: "transparent",
                 }}
                 onClick={() => {
                   navigate("/allProducts");
@@ -835,9 +841,11 @@ const Navbar = ({ categories }) => {
                   sx={{
                     pl: 2,
                     cursor: "pointer",
+                    color: "#3B2416",
                     textTransform: "capitalize",
                     "&:hover": { color: "#C59A3D" },
                     mt: index === 0 ? 1 : 0,
+                    WebkitTapHighlightColor: "transparent",
                   }}
                 >
                   <ListItemText
@@ -858,6 +866,7 @@ const Navbar = ({ categories }) => {
               sx={{
                 "&.active": { backgroundColor: "#D4A373" },
                 color: "#3B2416",
+                WebkitTapHighlightColor: "transparent",
               }}
               onClick={() => setDrawerOpen(false)}
             >

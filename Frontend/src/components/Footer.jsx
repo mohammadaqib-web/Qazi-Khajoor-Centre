@@ -6,13 +6,13 @@ import {
   IconButton,
   Divider,
 } from "@mui/material";
-import FacebookIcon from "@mui/icons-material/Facebook";
+// import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
-import YouTubeIcon from "@mui/icons-material/YouTube";
-import logoDark from "../assets/logo-dark.png";
+// import YouTubeIcon from "@mui/icons-material/YouTube";
+import logoDark from "../assets/logo-dark.webp";
 import { useNavigate } from "react-router-dom";
 
-const Footer = ({ categories, setCategories }) => {
+const Footer = ({ categories }) => {
   const navigate = useNavigate();
   return (
     <Box
@@ -29,19 +29,21 @@ const Footer = ({ categories, setCategories }) => {
         <Grid container spacing={6} justifyContent="space-between">
           {/* LOGO */}
           <Grid
-            item
-            xs={12}
-            md={3}
+            size={{ xs: 12, md: 3 }}
             sx={{
               display: "flex",
               justifyContent: { xs: "center", md: "flex-start" },
+              textAlign: "center",
             }}
           >
             <Box
               component="img"
               src={logoDark}
               alt="QKC logo"
-              sx={{ width: "150px" }}
+              sx={{
+                width: { xs: "300px", sm: "150px" },
+                height: { xs: "300px" },
+              }}
             />
           </Grid>
 

@@ -1,13 +1,6 @@
 import { Box } from "@mui/material";
 import { keyframes } from "@mui/system";
-import logo from "../assets/logo-dark.png";
-
-const fade = keyframes`
-  0% { opacity: 0; transform: scale(0.95); }
-  30% { opacity: 1; transform: scale(1); }
-  70% { opacity: 1; }
-  100% { opacity: 0; transform: scale(1.05); }
-`;
+import logo from "../assets/logo-dark.webp";
 
 const breathe = keyframes`
   0% { opacity: 0.6; transform: scale(0.95); }
