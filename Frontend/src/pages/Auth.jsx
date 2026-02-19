@@ -7,8 +7,8 @@ import {
   Button,
   Paper,
 } from "@mui/material";
-import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
-import { auth } from "../firebase";
+// import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
+// import { auth } from "../firebase";
 import axios from "axios";
 import bgPattern from "../assets/bg.png";
 import { loginSuccess } from "../features/auth/authSlice";
@@ -16,8 +16,10 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
+import CircularProgress from "@mui/material/CircularProgress";
 
 const Auth = () => {
+  const [loading, setLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const [step, setStep] = useState(1); // 1 = form, 2 = otp
   const [formData, setFormData] = useState({
@@ -36,88 +38,90 @@ const Auth = () => {
   };
 
   // Setup Recaptcha
-  const setupRecaptcha = () => {
-    if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new RecaptchaVerifier(
-        auth,
-        "recaptcha-container",
-        {
-          size: "invisible",
-          callback: () => {
-            console.log("Recaptcha verified");
-          },
-        },
-      );
-    }
-  };
+  // const setupRecaptcha = () => {
+  //   if (!window.recaptchaVerifier) {
+  //     window.recaptchaVerifier = new RecaptchaVerifier(
+  //       auth,
+  //       "recaptcha-container",
+  //       {
+  //         size: "invisible",
+  //         callback: () => {
+  //           console.log("Recaptcha verified");
+  //         },
+  //       },
+  //     );
+  //   }
+  // };
 
   // Send OTP
-  const handleSendOtp = async () => {
-    try {
-      setupRecaptcha();
+  // const handleSendOtp = async () => {
+  //   try {
+  //     setupRecaptcha();
 
-      const result = await signInWithPhoneNumber(
-        auth,
-        `+91${formData.number}`,
-        window.recaptchaVerifier,
-      );
+  //     const result = await signInWithPhoneNumber(
+  //       auth,
+  //       `+91${formData.number}`,
+  //       window.recaptchaVerifier,
+  //     );
 
-      setConfirmationResult(result);
-      setStep(2);
-      alert("OTP Sent Successfully");
-    } catch (error) {
-      console.log(error);
-      alert("Failed to send OTP");
-    }
-  };
+  //     setConfirmationResult(result);
+  //     setStep(2);
+  //     alert("OTP Sent Successfully");
+  //   } catch (error) {
+  //     console.log(error);
+  //     alert("Failed to send OTP");
+  //   }
+  // };
 
   // Verify OTP + Register/Login
-  const handleVerifyOtp = async () => {
-    try {
-      const result = await confirmationResult.confirm(otp);
-      const firebaseToken = await result.user.getIdToken();
+  // const handleVerifyOtp = async () => {
+  //   try {
+  //     const result = await confirmationResult.confirm(otp);
+  //     const firebaseToken = await result.user.getIdToken();
 
-      if (isLogin) {
-        // LOGIN API
-        const res = await axios.post(
-          `${import.meta.env.VITE_APP_API}/auth/login`,
-          {
-            number: formData.number,
-            password: formData.password,
-          },
-        );
+  //     if (isLogin) {
+  //       // LOGIN API
+  //       const res = await axios.post(
+  //         `${import.meta.env.VITE_APP_API}/auth/login`,
+  //         {
+  //           number: formData.number,
+  //           password: formData.password,
+  //         },
+  //       );
 
-        localStorage.setItem("token", res.data.token);
-        alert("Login Success");
-      } else {
-        // REGISTER API
-        const res = await axios.post(
-          `${import.meta.env.VITE_APP_API}/auth/register`,
-          {
-            ...formData,
-            firebaseToken,
-          },
-        );
-        const loginTime = dayjs().valueOf();
-        dispatch(
-          loginSuccess({
-            user: res.data.user,
-            token: res.data.token,
-            loginTime: loginTime,
-          }),
-        );
-        toast.success("Login Successful!");
-        navigate("/");
-      }
-    } catch (error) {
-      console.log(error);
-      alert("Invalid OTP");
-    }
-  };
+  //       localStorage.setItem("token", res.data.token);
+  //       alert("Login Success");
+  //     } else {
+  //       // REGISTER API
+  //       const res = await axios.post(
+  //         `${import.meta.env.VITE_APP_API}/auth/register`,
+  //         {
+  //           ...formData,
+  //           firebaseToken,
+  //         },
+  //       );
+  //       const loginTime = dayjs().valueOf();
+  //       dispatch(
+  //         loginSuccess({
+  //           user: res.data.user,
+  //           token: res.data.token,
+  //           loginTime: loginTime,
+  //         }),
+  //       );
+  //       toast.success("Login Successful!");
+  //       navigate("/");
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //     alert("Invalid OTP");
+  //   }
+  // };
 
   // LOGIN API
   const handleLogin = async () => {
     try {
+      setLoading(true);
+
       const res = await axios.post(
         `${import.meta.env.VITE_APP_API}/auth/login`,
         {
@@ -125,7 +129,9 @@ const Auth = () => {
           password: formData.password,
         },
       );
+
       const loginTime = dayjs().valueOf();
+
       dispatch(
         loginSuccess({
           user: res.data.user,
@@ -133,10 +139,46 @@ const Auth = () => {
           loginTime: loginTime,
         }),
       );
+
       toast.success("Login Successful!");
       navigate("/");
     } catch (error) {
-      console.log({ error: error.response.data.message });
+      toast.error(error?.response?.data?.message || "Something went wrong");
+    } finally {
+      setLoading(false); // ✅ always stop loader
+    }
+  };
+
+  // signup API
+  const handleSignup = async () => {
+    try {
+      setLoading(true);
+
+      const res = await axios.post(
+        `${import.meta.env.VITE_APP_API}/auth/registerWithoutOTP`,
+        {
+          name: formData.name,
+          number: formData.number,
+          password: formData.password,
+        },
+      );
+
+      const loginTime = dayjs().valueOf();
+
+      dispatch(
+        loginSuccess({
+          user: res.data.user,
+          token: res.data.token,
+          loginTime: loginTime,
+        }),
+      );
+
+      toast.success("Account created successfully!");
+      navigate("/");
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Something went wrong");
+    } finally {
+      setLoading(false); // ✅ always stop loader
     }
   };
 
@@ -195,6 +237,7 @@ const Auth = () => {
                 <Button
                   fullWidth
                   onClick={handleLogin}
+                  disabled={loading}
                   sx={{
                     backgroundColor: "#D4A373",
                     color: "#3B2416",
@@ -202,12 +245,17 @@ const Auth = () => {
                     py: 1.4,
                   }}
                 >
-                  Login
+                  {loading ? (
+                    <CircularProgress size={24} sx={{ color: "#3B2416" }} />
+                  ) : (
+                    "Login"
+                  )}
                 </Button>
               ) : (
                 <Button
                   fullWidth
-                  onClick={handleSendOtp}
+                  onClick={handleSignup}
+                  disabled={loading}
                   sx={{
                     backgroundColor: "#D4A373",
                     color: "#3B2416",
@@ -215,7 +263,11 @@ const Auth = () => {
                     py: 1.4,
                   }}
                 >
-                  Sign up
+                  {loading ? (
+                    <CircularProgress size={24} sx={{ color: "#3B2416" }} />
+                  ) : (
+                    "Sign up"
+                  )}
                 </Button>
               )}
             </>
@@ -246,7 +298,7 @@ const Auth = () => {
             </>
           )}
 
-          <div id="recaptcha-container"></div>
+          {/* <div id="recaptcha-container"></div> */}
 
           <Typography sx={{ mt: 2 }}>
             {isLogin ? (

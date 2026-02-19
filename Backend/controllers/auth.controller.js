@@ -38,7 +38,6 @@ exports.register = async (req, res) => {
 };
 
 exports.registerWithoutOTP = async (req, res) => {
-  console.log("inside");
   try {
     const { name, number, password, role = "user" } = req.body;
 
@@ -46,7 +45,7 @@ exports.registerWithoutOTP = async (req, res) => {
     if (existingUser)
       return res.status(400).json({ message: "User already exists" });
 
-    const user = await User.create({ name, number, password, role });
+    const user = await User.create({ name, number, password, role: "user" });
 
     res.status(201).json({
       message: "User registered successfully",
