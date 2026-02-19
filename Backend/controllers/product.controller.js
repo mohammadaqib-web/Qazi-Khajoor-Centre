@@ -289,3 +289,23 @@ exports.validateCartItems = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+exports.searchProducts = async (req, res) => {
+  try {
+    const { q } = req.query;
+
+    if (!q || q.trim() === "") {
+      return res.json([]);
+    }
+
+    const products = await Product.find({
+      name: { $regex: q, $options: "i" }, // case insensitive
+    })
+      .select("name images.url")
+      .limit(8);
+
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

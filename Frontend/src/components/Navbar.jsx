@@ -100,6 +100,11 @@ const Navbar = ({ categories }) => {
 
   const isProductsActive = location.pathname.startsWith("/products");
 
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+
   /* ---------------- VALIDATE CART ---------------- */
   useEffect(() => {
     const validateCart = async () => {
@@ -122,6 +127,32 @@ const Navbar = ({ categories }) => {
 
     if (cartOpen) validateCart();
   }, [cartOpen, cartItems]);
+
+  useEffect(() => {
+    const fetchSearch = async () => {
+      if (!searchTerm.trim()) {
+        setSearchResults([]);
+        return;
+      }
+
+      try {
+        setSearchLoading(true);
+
+        const res = await axios.get(
+          `${import.meta.env.VITE_APP_API}/products/search?q=${searchTerm}`,
+        );
+
+        setSearchResults(res.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setSearchLoading(false);
+      }
+    };
+
+    const debounce = setTimeout(fetchSearch, 300);
+    return () => clearTimeout(debounce);
+  }, [searchTerm]);
 
   /* ---------------- CALCULATIONS ---------------- */
   const subtotal = validatedCart.reduce(
@@ -328,7 +359,7 @@ const Navbar = ({ categories }) => {
 
           {/* RIGHT */}
           <Box display="flex" gap={1}>
-            <IconButton>
+            <IconButton onClick={() => setSearchOpen(true)}>
               <SearchIcon sx={{ color: "#3B2416" }} />
             </IconButton>
 
@@ -833,6 +864,170 @@ const Navbar = ({ categories }) => {
               <ListItemText primary="CONTACT" />
             </ListItem>
           </List>
+        </Box>
+      </Drawer>
+
+      {/* SEARCH DRAWER */}
+      <Drawer
+        anchor="top"
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        PaperProps={{
+          sx: {
+            height: "70vh",
+            backgroundColor: "#f5f0e6",
+          },
+        }}
+      >
+        {!isMobile && (
+          <Box sx={{ textAlign: "right", pr: 2, pt: 1 }}>
+            <IconButton onClick={() => setSearchOpen(false)}>
+              <CloseIcon sx={{ fontSize: "30px" }} />
+            </IconButton>
+          </Box>
+        )}
+        <Box
+          display="flex"
+          height="100%"
+          sx={{
+            pt: 0,
+            pl: { xs: 0, md: 2, xl: 30 },
+            pr: { xs: 0, md: 2, xl: 30 },
+          }}
+        >
+          {/* ---------------- LEFT CATEGORY PANEL ---------------- */}
+          <Box
+            sx={{
+              width: "20%",
+              pr: { xs: 0, xl: 4 },
+              mr: 4,
+              borderRight: "2px solid #ddd",
+              mb: 4,
+              display: { xs: "none", md: "flex" },
+            }}
+          >
+            <List>
+              <ListItem
+                sx={{
+                  cursor: "pointer",
+                  py: 1,
+                  px: 2,
+                  borderRadius: 1,
+                  backgroundColor: "transparent",
+                  color: "#3B2416",
+                  "&:hover": {
+                    backgroundColor: "#D4A373",
+                    color: "#000",
+                  },
+                }}
+                onClick={() => {
+                  navigate(`/allProducts`);
+                  setSearchOpen(false);
+                }}
+              >
+                <ListItemText primary={"ALL PRODUCTS"} />
+              </ListItem>
+              {categories.map((cat, index) => (
+                <ListItem
+                  key={cat._id}
+                  sx={{
+                    cursor: "pointer",
+                    py: 1,
+                    px: 2,
+                    borderRadius: 1,
+                    backgroundColor: "transparent",
+                    color: "#3B2416",
+                    "&:hover": {
+                      backgroundColor: "#D4A373",
+                      color: "#000",
+                    },
+                  }}
+                  onClick={() => {
+                    navigate(`/${encodeURIComponent(cat.name)}/${cat._id}`);
+                    setSearchOpen(false);
+                  }}
+                >
+                  <ListItemText primary={cat.name.toUpperCase()} />
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+
+          {/* ---------------- RIGHT SEARCH PANEL ---------------- */}
+          <Box sx={{ flex: 1, pl: { xs: 0, md: 4 }, p: { xs: 3, md: 0 } }}>
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+            >
+              <TextField
+                autoFocus
+                fullWidth
+                placeholder="Search"
+                variant="standard"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                InputProps={{
+                  disableUnderline: true,
+                  sx: {
+                    fontSize: { xs: 16, md: 26 },
+                    color: "#3B2416",
+                  },
+                }}
+              />
+
+              <IconButton onClick={() => setSearchTerm("")}>
+                <CloseIcon sx={{ fontSize: { xs: 16, md: 26 } }} />
+              </IconButton>
+            </Box>
+
+            <Divider
+              sx={{
+                my: { xs: 0, md: 2 },
+                backgroundColor: "#D4A373",
+                borderBottomWidth: 2,
+              }}
+            />
+
+            {searchLoading && <CircularProgress />}
+
+            <List>
+              {searchResults.map((item) => (
+                <ListItem
+                  key={item._id}
+                  sx={{ cursor: "pointer" }}
+                  onClick={() => {
+                    navigate(`/product/${item._id}`);
+                    setSearchOpen(false);
+                  }}
+                >
+                  <Box
+                    component="img"
+                    src={item.images?.url}
+                    sx={{
+                      width: 60,
+                      height: 60,
+                      objectFit: "cover",
+                      borderRadius: 1,
+                      mr: 2,
+                    }}
+                  />
+
+                  <ListItemText
+                    primary={item.name}
+                    primaryTypographyProps={{
+                      sx: {
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                      },
+                    }}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </Box>
         </Box>
       </Drawer>
     </>

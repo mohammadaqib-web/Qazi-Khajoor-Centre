@@ -413,8 +413,8 @@ const AllProducts = () => {
                           alt={product.name}
                           className="product-image"
                           sx={{
-                            minHeight: 200,
-                            maxHeight: 200,
+                            minHeight: { xs: 170, md: 200 },
+                            maxHeight: { xs: 170, md: 200 },
                             objectFit: "contain",
                             p: 2,
                             transition: "transform 0.4s ease",
@@ -447,7 +447,7 @@ const AllProducts = () => {
 
                         <Typography
                           sx={{
-                            mt: 1,
+                            mt: 1.5,
                             fontSize: 18,
                             fontWeight: 900,
                             color: "#3B2416",
