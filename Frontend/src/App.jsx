@@ -16,12 +16,35 @@ import Category from "./admin/Category";
 import PublicRoute from "./layout/PublicRoute";
 import AdminProtectedRoute from "./utils/AdminProtectedRoute";
 import ScrollToTop from "./utils/ScrollToTop";
-import './App.css'
+import "./App.css";
+import { useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import PageLoader from "./components/PageLoader";
 
 function App() {
+  const location = useLocation();
+  const [loadingPage, setLoadingPage] = useState(false);
+
+  const isAdminRoute = location.pathname.startsWith("/admin");
+
+  useEffect(() => {
+    if (isAdminRoute) return;
+
+    setLoadingPage(true);
+
+    const timer = setTimeout(() => {
+      setLoadingPage(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [location.pathname, isAdminRoute]);
+
   return (
     <>
+      {loadingPage && <PageLoader />}
+
       <ScrollToTop />
+
       <Routes>
         <Route element={<NavbarLayout />}>
           <Route path="/" element={<Home />} />
@@ -34,9 +57,8 @@ function App() {
           <Route path="/allProducts" element={<AllProducts />} />
           <Route path="/:category/:id" element={<AllProducts />} />
           <Route path="/product/:id" element={<SingleProduct />} />
-
-          {/* <Route path="*" element={<NotFound />} /> */}
         </Route>
+
         <Route element={<AdminProtectedRoute />}>
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Dashboard />} />

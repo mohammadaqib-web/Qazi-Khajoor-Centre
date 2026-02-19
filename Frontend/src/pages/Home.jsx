@@ -7,27 +7,29 @@ import StorageInfoSection from "../components/StorageInfoSection";
 import TestimonialsSection from "../components/TestimonialsSection";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useOutletContext } from "react-router-dom";
 
 const API = import.meta.env.VITE_APP_API;
 
 const Home = () => {
-  const [categories, setCategories] = useState([]);
+  const { categories } = useOutletContext();
+  // const [categories, setCategories] = useState([]);
   const [productsByCategory, setProductsByCategory] = useState({});
   const [loading, setLoading] = useState(true);
 
   /* ---------------- FETCH CATEGORIES ---------------- */
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await axios.get(`${API}/categories`);
-        setCategories(res.data.categories);
-      } catch (error) {
-        console.error("Error fetching categories", error);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchCategories = async () => {
+  //     try {
+  //       const res = await axios.get(`${API}/categories`);
+  //       setCategories(res.data.categories);
+  //     } catch (error) {
+  //       console.error("Error fetching categories", error);
+  //     }
+  //   };
 
-    fetchCategories();
-  }, []);
+  //   fetchCategories();
+  // }, []);
 
   /* ---------------- FETCH PRODUCTS FOR EACH CATEGORY ---------------- */
   useEffect(() => {
@@ -37,15 +39,21 @@ const Home = () => {
       try {
         setLoading(true);
 
+        const firstFour = categories.slice(0, 4);
+
+        const responses = await Promise.all(
+          firstFour.map((category) =>
+            axios.get(
+              `${API}/products/category/${category._id}?page=1&limit=8`,
+            ),
+          ),
+        );
+
         const updatedProducts = {};
 
-        for (let category of categories) {
-          const res = await axios.get(
-            `${API}/products/category/${category._id}?page=1&limit=8`,
-          );
-
-          updatedProducts[category._id] = res.data.products;
-        }
+        responses.forEach((res, index) => {
+          updatedProducts[firstFour[index]._id] = res.data.products;
+        });
 
         setProductsByCategory(updatedProducts);
       } catch (error) {

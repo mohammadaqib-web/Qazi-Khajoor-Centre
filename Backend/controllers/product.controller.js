@@ -5,6 +5,14 @@ const { default: mongoose } = require("mongoose");
 
 exports.createProduct = async (req, res) => {
   try {
+    const productCount = await Product.countDocuments();
+
+    if (productCount >= 100) {
+      return res.status(400).json({
+        message: "Product limit reached (Maximum 100 products allowed)",
+      });
+    }
+
     if (!req.file) {
       return res.status(400).json({ message: "Image is required" });
     }
@@ -13,14 +21,13 @@ exports.createProduct = async (req, res) => {
       return res.status(400).json({ message: "Sizes are required" });
     }
 
-    // Parse sizes (because coming from FormData)
     const sizes = JSON.parse(req.body.sizes);
 
     if (!Array.isArray(sizes) || sizes.length === 0) {
       return res.status(400).json({ message: "Invalid sizes format" });
     }
 
-    // Upload image to Cloudinary
+    // 🔹 Upload image AFTER limit check
     const uploadResult = await new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         { folder: "products" },
