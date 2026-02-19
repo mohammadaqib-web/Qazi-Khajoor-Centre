@@ -26,7 +26,7 @@ const Footer = ({ categories }) => {
     >
       <Container maxWidth="lg">
         {/* TOP FOOTER */}
-        <Grid container spacing={6} justifyContent="space-between">
+        <Grid container spacing={6} alignItems="flex-start">
           {/* LOGO */}
           <Grid
             size={{ xs: 12, md: 3 }}
@@ -42,61 +42,55 @@ const Footer = ({ categories }) => {
               alt="QKC logo"
               sx={{
                 width: { xs: "300px", sm: "150px" },
-                height: { xs: "300px", sm: "150px" },
+                height: "auto",
               }}
             />
           </Grid>
 
-          <Box
-            display={"flex"}
-            justifyContent={"space-between"}
-            width={"100%"}
-            mt={-6}
-          >
-            {/* COMPANY */}
-            <Grid size={{ xs: 4, md: 3 }}>
-              <Typography fontWeight={700} mb={2}>
-                COMPANY
+          {/* COMPANY */}
+          <Grid size={{ xs: 4, md: 3 }}>
+            <Typography fontWeight={700} mb={2}>
+              COMPANY
+            </Typography>
+            {["Contact Us", "About Us"].map((item) => (
+              <Typography
+                key={item}
+                sx={{ mb: 1, fontSize: 14, cursor: "pointer" }}
+                onClick={() => {
+                  if (item === "Contact Us") navigate("/contact");
+                  if (item === "About Us") navigate("/about");
+                }}
+              >
+                {item}
               </Typography>
-              {["Contact Us", "About Us"].map((item) => (
-                <Typography
-                  key={item}
-                  sx={{ mb: 1, fontSize: 14, cursor: "pointer" }}
-                  onClick={() => {
-                    if (item === "Contact Us") navigate("/contact");
-                    if (item === "About Us") navigate("/about");
-                  }}
-                >
-                  {item}
-                </Typography>
-              ))}
-            </Grid>
+            ))}
+          </Grid>
 
-            {/* PRODUCTS */}
-            <Grid size={{ xs: 4, md: 3 }}>
-              <Typography fontWeight={700} mb={2}>
-                PRODUCTS
+          {/* PRODUCTS */}
+          <Grid size={{ xs: 4, md: 3 }}>
+            <Typography fontWeight={700} mb={2}>
+              PRODUCTS
+            </Typography>
+            {categories?.slice(0, 4).map((item) => (
+              <Typography
+                key={item._id}
+                sx={{
+                  mb: 1,
+                  fontSize: 14,
+                  cursor: "pointer",
+                  textTransform: "capitalize",
+                }}
+                onClick={() =>
+                  navigate(`/${encodeURIComponent(item.name)}/${item._id}`)
+                }
+              >
+                {item.name}
               </Typography>
-              {categories?.slice(0, 4).map((item) => (
-                <Typography
-                  key={item._id}
-                  sx={{
-                    mb: 1,
-                    fontSize: 14,
-                    cursor: "pointer",
-                    textTransform: "capitalize",
-                  }}
-                  onClick={() =>
-                    navigate(`/${encodeURIComponent(item.name)}/${item._id}`)
-                  }
-                >
-                  {item.name}
-                </Typography>
-              ))}
-            </Grid>
+            ))}
+          </Grid>
 
-            {/* CATEGORIES */}
-            {/* <Grid item xs={12} sm={6} md={2}>
+          {/* CATEGORIES */}
+          {/* <Grid item xs={12} sm={6} md={2}>
             <Typography fontWeight={700} mb={2}>
               CATEGORIES
             </Typography>
@@ -110,36 +104,35 @@ const Footer = ({ categories }) => {
             ))}
           </Grid> */}
 
-            {/* SOCIAL */}
-            <Grid
-              size={{ xs: 4, md: 3 }}
-              sx={{
-                textAlign: { xs: "center", md: "center" },
-              }}
-            >
-              <Typography fontWeight={700} mb={2}>
-                FOLLOW US
-              </Typography>
-              <Box>
-                {/* <IconButton sx={{ color: "#3B2416" }}>
+          {/* SOCIAL */}
+          <Grid
+            size={{ xs: 4, md: 3 }}
+            sx={{
+              textAlign: { xs: "center", md: "center" },
+            }}
+          >
+            <Typography fontWeight={700} mb={2}>
+              FOLLOW US
+            </Typography>
+            <Box>
+              {/* <IconButton sx={{ color: "#3B2416" }}>
                 <FacebookIcon />
               </IconButton> */}
-                <IconButton
-                  component="a"
-                  href="https://instagram.com/al_qari_khajoor"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{ color: "#3B2416" }}
-                >
-                  <InstagramIcon />
-                </IconButton>
+              <IconButton
+                component="a"
+                href="https://instagram.com/al_qari_khajoor"
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{ color: "#3B2416" }}
+              >
+                <InstagramIcon />
+              </IconButton>
 
-                {/* <IconButton sx={{ color: "#3B2416" }}>
+              {/* <IconButton sx={{ color: "#3B2416" }}>
                 <YouTubeIcon />
               </IconButton> */}
-              </Box>
-            </Grid>
-          </Box>
+            </Box>
+          </Grid>
         </Grid>
 
         {/* DIVIDER */}

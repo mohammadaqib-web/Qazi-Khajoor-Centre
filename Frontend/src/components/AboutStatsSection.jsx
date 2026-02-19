@@ -1,10 +1,4 @@
-import {
-  Box,
-  Container,
-  Typography,
-  Grid,
-  Divider,
-} from "@mui/material";
+import { Box, Container, Typography, Grid, Divider } from "@mui/material";
 import StorefrontIcon from "@mui/icons-material/Storefront";
 import PublicIcon from "@mui/icons-material/Public";
 import Inventory2Icon from "@mui/icons-material/Inventory2";
@@ -13,22 +7,22 @@ import SpaIcon from "@mui/icons-material/Spa";
 const stats = [
   {
     icon: <StorefrontIcon />,
-    value: "200+",
+    value: "1",
     label: "Number of Stores",
   },
   {
     icon: <PublicIcon />,
-    value: "2",
+    value: "1",
     label: "Countries",
   },
   {
     icon: <Inventory2Icon />,
-    value: "5000+",
+    value: "50+",
     label: "Products",
   },
   {
     icon: <SpaIcon />,
-    value: "50",
+    value: "10",
     label: "Varieties of Premium Dates",
   },
 ];
@@ -72,9 +66,9 @@ const AboutStatsSection = () => {
                 fontSize: 15,
               }}
             >
-              Welcome to QKC, where an unwavering commitment with a heritage
-              of quality that spans over 40 years. Enjoy our unique assortment
-              of dates, harvested from our own organic farm in the Middle East,
+              Welcome to QKC, where an unwavering commitment with a heritage of
+              quality that spans over 40 years. Enjoy our unique assortment of
+              dates, harvested from our own organic farm in the Middle East,
               featuring over 50+ varieties. Experience a world of luxury with
               our exquisitely curated collection of exotic fruits, nuts, and
               imported beverages.
