@@ -153,8 +153,34 @@ const Footer = ({ categories }) => {
             size={{ xs: 12 }}
             sx={{ textAlign: { xs: "center", md: "center" } }}
           >
-            <Typography fontSize={14}>
-              © 2026 Qari Khajoor Centre. All Rights Reserved.
+            <Typography
+              sx={{
+                fontSize: 14,
+                color: "#6B4F3A",
+                textAlign: "center",
+                // py: 2,
+              }}
+            >
+              © {new Date().getFullYear()} Qari Khajoor Centre.
+              <Box component="span" sx={{ mx: 0.5 }}>
+                Crafted by
+              </Box>
+              <Box
+                component="span"
+                onClick={() => window.open("https://codnexa.in", "_blank")}
+                sx={{
+                  fontWeight: 600,
+                  color: "#3B2416",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    color: "#3B2416",
+                    // textDecoration: "underline",
+                  },
+                }}
+              >
+                Codnexa
+              </Box>
             </Typography>
           </Grid>
 
