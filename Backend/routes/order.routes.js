@@ -7,6 +7,7 @@ const {
   updateOrderStatus,
   getAllOrders,
   createRazorpayOrder,
+  updatePaymentStatus,
 } = require("../controllers/order.controller");
 
 const auth = require("../middleware/auth.middleware");
@@ -15,6 +16,7 @@ const admin = require("../middleware/admin.middleware");
 router.post("/", auth, createOrder);
 router.get("/my", auth, getMyOrders);
 router.put("/:id/status", auth, admin, updateOrderStatus);
+router.put("/:id/payment-status", auth, admin, updatePaymentStatus);
 router.get("/", auth, admin, getAllOrders);
 router.post("/razorpay", auth, createRazorpayOrder);
 

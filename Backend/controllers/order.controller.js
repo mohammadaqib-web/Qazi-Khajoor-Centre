@@ -117,3 +117,48 @@ exports.updateOrderStatus = async (req, res) => {
 
   res.json(order);
 };
+
+exports.updatePaymentStatus = async (req, res) => {
+  try {
+    const { paymentStatus } = req.body;
+
+    const allowedStatuses = ["pending", "paid", "failed"];
+
+    if (!allowedStatuses.includes(paymentStatus)) {
+      return res.status(400).json({
+        message: "Invalid payment status value",
+      });
+    }
+
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({
+        message: "Order not found",
+      });
+    }
+
+    if (
+      order.payment.paymentMethod === "razorpay" &&
+      order.payment.paymentStatus === "paid"
+    ) {
+      return res.status(400).json({
+        message: "Paid Razorpay orders cannot be modified",
+      });
+    }
+
+    order.payment.paymentStatus = paymentStatus;
+
+    await order.save();
+
+    res.status(200).json({
+      message: "Payment status updated successfully",
+      order,
+    });
+  } catch (error) {
+    console.error("Payment status update error:", error);
+    res.status(500).json({
+      message: "Server error while updating payment status",
+    });
+  }
+};

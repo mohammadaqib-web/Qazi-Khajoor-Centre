@@ -105,7 +105,7 @@ const Users = () => {
               <TableCell>Phone</TableCell>
               <TableCell>Role</TableCell>
               <TableCell>Status</TableCell>
-              <TableCell>Address</TableCell>
+              {/* <TableCell>Address</TableCell> */}
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -133,7 +133,7 @@ const Users = () => {
                   />
                 </TableCell>
 
-                <TableCell>{user.address || "—"}</TableCell>
+                {/* <TableCell>{user.address || "—"}</TableCell> */}
 
                 <TableCell>
                   <Box display="flex" gap={1}>
