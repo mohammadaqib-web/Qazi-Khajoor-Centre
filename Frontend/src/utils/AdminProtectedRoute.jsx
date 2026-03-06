@@ -16,7 +16,7 @@ const AdminProtectedRoute = () => {
       dispatch(logout());
       toast.success("You're logged out!");
     } else if (!isValidToken) {
-      dispatch(logoutUser());
+      dispatch(logout());
       toast.error("Session Expired!");
     } else if (user.role !== "admin") {
       toast.error("You are not authorized to use this feature!");

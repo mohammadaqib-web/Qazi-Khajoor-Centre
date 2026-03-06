@@ -101,7 +101,7 @@ const OrdersSection = ({ orders }) => (
                   <Grid size={{ xs: 12 }}>
                     <Box
                       component="img"
-                      src={item.product?.images?.url}
+                      src={item.product?.images[0]?.url}
                       alt={item.product?.name}
                       sx={{
                         width: "100%",

@@ -24,9 +24,9 @@ const HeroSlider = () => {
             sx={{
               position: "relative",
               height: {
-                xs: "45vh",
-                sm: "55vh",
-                md: "65vh",
+                xs: "35vh",
+                sm: "45vh",
+                md: "50vh",
               },
               overflow: "hidden",
               display: "flex",
@@ -41,15 +41,41 @@ const HeroSlider = () => {
                 backgroundImage: `url(${slide.image})`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
-                filter: "blur(3px)",
+                // filter: "blur(3px)",
                 transform: "scale(1.1)", // prevents blur edges
                 zIndex: 0,
                 mt: -10,
               }}
             />
 
-            {/* ACTUAL IMAGE (sharp, contained) */}
             <Box
+              sx={{
+                position: "absolute",
+                bottom: { xs: 40, md: 50 }, // distance above pagination
+                width: "100%",
+                display: "flex",
+                justifyContent: "center",
+                zIndex: 2,
+              }}
+            >
+              <Button
+                variant="contained"
+                sx={{
+                  backgroundColor: "#3B2416",
+                  fontWeight: 600,
+                  py: 1.2,
+                  px: 3,
+                  color: "white",
+                  borderRadius: 2,
+                }}
+                onClick={() => navigate("/allProducts")}
+              >
+                {slide.cta}
+              </Button>
+            </Box>
+
+            {/* ACTUAL IMAGE (sharp, contained) */}
+            {/* <Box
               sx={{
                 position: "absolute",
                 inset: 0,
@@ -59,10 +85,10 @@ const HeroSlider = () => {
                 backgroundPosition: "center",
                 zIndex: 1,
               }}
-            />
+            /> */}
 
             {/* Content */}
-            <Container
+            {/* <Container
               sx={{
                 position: "relative",
                 zIndex: 2,
@@ -112,7 +138,7 @@ const HeroSlider = () => {
                   {slide.cta}
                 </Button>
               </Box>
-            </Container>
+            </Container> */}
           </Box>
         </SwiperSlide>
       ))}

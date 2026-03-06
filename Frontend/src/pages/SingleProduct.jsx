@@ -36,6 +36,7 @@ const SingleProduct = () => {
 
   const dispatch = useDispatch();
 
+  const [selectedImage, setSelectedImage] = useState(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [product, setProduct] = useState(null);
   const [reviews, setReviews] = useState([]);
@@ -67,7 +68,10 @@ const SingleProduct = () => {
       setProduct(productRes.data);
       setReviews(reviewsRes.data);
 
-      // Default select first size
+      if (productRes.data.images?.length > 0) {
+        setSelectedImage(productRes.data.images[0].url);
+      }
+
       if (productRes.data.sizes.length > 0) {
         setSelectedSize(productRes.data.sizes[0]);
       }
@@ -92,25 +96,76 @@ const SingleProduct = () => {
 
   return (
     <Box sx={{ backgroundImage: `url(${bgPattern})` }}>
-      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 6 } }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 3 } }}>
         <Grid container spacing={6}>
-          {/* LEFT IMAGE */}
+          {/* LEFT IMAGE GALLERY */}
           <Grid size={{ xs: 12, md: 6 }}>
             <Box
-              component="img"
-              src={product.images?.url}
               sx={{
-                width: "100%",
-                borderRadius: 3,
-                objectFit: "contain",
-                minHeight: 200,
-                maxHeight: 400,
+                display: "flex",
+                gap: 2,
+                flexDirection: { xs: "column", md: "row" },
               }}
-            />
+            >
+              {/* MAIN IMAGE */}
+              <Box
+                sx={{
+                  flex: 1,
+                  order: { xs: 1, md: 2 },
+                }}
+              >
+                <Box
+                  component="img"
+                  src={selectedImage}
+                  alt={product.name}
+                  sx={{
+                    width: "100%",
+                    borderRadius: 3,
+                    objectFit: "contain",
+                    minHeight: { xs: 350, md: 450 },
+                    maxHeight: { xs: 350, md: 450 },
+                  }}
+                />
+              </Box>
+
+              {/* THUMBNAILS */}
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: { xs: 3, md: 1 },
+                  flexDirection: { xs: "row", md: "column" },
+                  overflowX: { xs: "auto", md: "visible" },
+                  order: { xs: 2, md: 1 },
+                  justifyContent: "center",
+                  mr: { xs: 0, md: 2 },
+                }}
+              >
+                {product?.images?.map((img, index) => (
+                  <Box
+                    key={index}
+                    component="img"
+                    src={img.url}
+                    onClick={() => setSelectedImage(img.url)}
+                    sx={{
+                      width: { xs: 70, md: 70 },
+                      height: { xs: 70, md: 70 },
+                      objectFit: "cover",
+                      borderRadius: 2,
+                      cursor: "pointer",
+                      border:
+                        selectedImage === img.url
+                          ? "2px solid rgba(0,0,0,0.7)"
+                          : "1px solid #ddd",
+                      flexShrink: 0,
+                    }}
+                  />
+                ))}
+              </Box>
+            </Box>
           </Grid>
 
           {/* RIGHT DETAILS */}
-          <Grid size={{ xs: 12, md: 6 }} sx={{ mt: { xs: -3.5, md: 0 } }}>
+          <Grid size={{ xs: 12, md: 6 }} sx={{ mt: { xs: -1.5, md: 4 } }}>
             <Typography variant="h4" fontWeight={700}>
               {product.name}
             </Typography>
@@ -230,7 +285,7 @@ const SingleProduct = () => {
                       productId: product._id,
                       sizeId: selectedSize._id,
                       name: product.name,
-                      image: product.images.url,
+                      image: product.images[0]?.url,
                       size: selectedSize.size,
                       price: selectedSize.price,
                       quantity: qty,

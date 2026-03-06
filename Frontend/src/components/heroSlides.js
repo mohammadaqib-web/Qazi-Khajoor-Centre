@@ -14,13 +14,13 @@ export const heroSlides = [
     thumb: "https://images.unsplash.com/photo-1603048297172-c92544798d98?w=120",
     subtitle: "Handpicked Delicacies,",
     title: "Purely crafted for You",
-    cta: "Explore Products",
+    cta: "Shop Now",
   },
   {
     image: thirdImg,
     thumb: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=120",
     subtitle: "Premium Quality,",
     title: "for your Loved Ones",
-    cta: "Order Now",
+    cta: "Shop Now",
   },
 ];

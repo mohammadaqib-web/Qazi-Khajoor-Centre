@@ -3,6 +3,20 @@ const Category = require("../models/category.model");
 const cloudinary = require("../config/cloudinary");
 const { default: mongoose } = require("mongoose");
 
+// Helper: Upload image to cloudinary
+const uploadToCloudinary = (fileBuffer) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: "products" },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result);
+      },
+    );
+    stream.end(fileBuffer);
+  });
+};
+
 exports.createProduct = async (req, res) => {
   try {
     const productCount = await Product.countDocuments();
@@ -13,46 +27,77 @@ exports.createProduct = async (req, res) => {
       });
     }
 
-    if (!req.file) {
-      return res.status(400).json({ message: "Image is required" });
+    const { name, description, category, sizes } = req.body;
+
+    if (!name || !description || !category || !sizes) {
+      return res.status(400).json({
+        message: "Name, description, category and sizes are required",
+      });
     }
 
-    if (!req.body.sizes) {
-      return res.status(400).json({ message: "Sizes are required" });
+    // Validate category
+    const categoryExists = await Category.findById(category);
+    if (!categoryExists) {
+      return res.status(400).json({ message: "Invalid category" });
     }
 
-    const sizes = JSON.parse(req.body.sizes);
+    // Validate sizes
+    const parsedSizes = JSON.parse(sizes);
 
-    if (!Array.isArray(sizes) || sizes.length === 0) {
-      return res.status(400).json({ message: "Invalid sizes format" });
+    if (!Array.isArray(parsedSizes) || parsedSizes.length === 0) {
+      return res.status(400).json({
+        message: "At least one size is required",
+      });
     }
 
-    // 🔹 Upload image AFTER limit check
-    const uploadResult = await new Promise((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream(
-        { folder: "products" },
-        (error, result) => {
-          if (error) reject(error);
-          else resolve(result);
-        },
-      );
-      stream.end(req.file.buffer);
-    });
+    for (let s of parsedSizes) {
+      if (!s.size || !s.price || s.stock === undefined) {
+        return res.status(400).json({
+          message: "Each size must have size, price and stock",
+        });
+      }
+    }
+
+    // Validate images
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({
+        message: "At least one product image is required",
+      });
+    }
+
+    if (req.files.length > 5) {
+      return res.status(400).json({
+        message: "Maximum 5 images allowed",
+      });
+    }
+
+    // Upload images
+    const uploadedImages = await Promise.all(
+      req.files.map(async (file) => {
+        const result = await uploadToCloudinary(file.buffer);
+
+        return {
+          url: result.secure_url,
+          public_id: result.public_id,
+        };
+      }),
+    );
 
     const product = await Product.create({
-      name: req.body.name,
-      description: req.body.description,
-      category: req.body.category,
-      sizes,
-      images: {
-        url: uploadResult.secure_url,
-        public_id: uploadResult.public_id,
-      },
+      name,
+      description,
+      category,
+      sizes: parsedSizes,
+      images: uploadedImages,
       createdBy: req.user.id,
     });
 
-    res.status(201).json(product);
+    res.status(201).json({
+      success: true,
+      product,
+    });
   } catch (error) {
+    console.error("Create Product Error:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -144,42 +189,89 @@ exports.updateProduct = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // If sizes sent
-    if (req.body.sizes) {
-      product.sizes = JSON.parse(req.body.sizes);
+    const { name, description, category, sizes, deletedImages } = req.body;
+
+    // Validate category
+    if (category) {
+      const categoryExists = await Category.findById(category);
+      if (!categoryExists) {
+        return res.status(400).json({ message: "Invalid category" });
+      }
+      product.category = category;
     }
 
-    // If new image uploaded
-    if (req.file) {
-      // Delete old image
-      await cloudinary.uploader.destroy(product.images.public_id);
+    // =========================
+    // Delete Selected Images
+    // =========================
+    if (deletedImages) {
+      const parsedDeleted = JSON.parse(deletedImages);
 
-      const uploadResult = await new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          { folder: "products" },
-          (error, result) => {
-            if (error) reject(error);
-            else resolve(result);
-          },
-        );
-        stream.end(req.file.buffer);
+      const imagesToDelete = product.images.filter((img) =>
+        parsedDeleted.includes(img.url),
+      );
+
+      await Promise.all(
+        imagesToDelete.map((img) => cloudinary.uploader.destroy(img.public_id)),
+      );
+
+      product.images = product.images.filter(
+        (img) => !parsedDeleted.includes(img.url),
+      );
+    }
+
+    // =========================
+    // Upload New Images
+    // =========================
+    if (req.files && req.files.length > 0) {
+      const uploadedImages = await Promise.all(
+        req.files.map(async (file) => {
+          const result = await uploadToCloudinary(file.buffer);
+
+          return {
+            url: result.secure_url,
+            public_id: result.public_id,
+          };
+        }),
+      );
+
+      product.images = [...product.images, ...uploadedImages];
+    }
+
+    // Limit images
+    if (product.images.length > 5) {
+      return res.status(400).json({
+        message: "Maximum 5 images allowed",
       });
-
-      product.images = {
-        url: uploadResult.secure_url,
-        public_id: uploadResult.public_id,
-      };
     }
 
-    // Update basic fields
-    product.name = req.body.name ?? product.name;
-    product.description = req.body.description ?? product.description;
-    product.category = req.body.category ?? product.category;
+    // =========================
+    // Update Other Fields
+    // =========================
+    if (name) product.name = name;
+    if (description) product.description = description;
+
+    if (sizes) {
+      const parsedSizes = JSON.parse(sizes);
+
+      for (let s of parsedSizes) {
+        if (!s.size || !s.price || s.stock === undefined) {
+          return res.status(400).json({
+            message: "Each size must have size, price and stock",
+          });
+        }
+      }
+
+      product.sizes = parsedSizes;
+    }
 
     await product.save();
 
-    res.json(product);
+    res.json({
+      success: true,
+      product,
+    });
   } catch (error) {
+    console.error("Update Product Error:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -192,12 +284,21 @@ exports.deleteProduct = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    await cloudinary.uploader.destroy(product.images.public_id);
+    // Delete all images from Cloudinary
+    if (product.images && product.images.length > 0) {
+      await Promise.all(
+        product.images.map((img) => cloudinary.uploader.destroy(img.public_id)),
+      );
+    }
 
     await product.deleteOne();
 
-    res.json({ message: "Product deleted successfully" });
+    res.json({
+      success: true,
+      message: "Product deleted successfully",
+    });
   } catch (error) {
+    console.error("Delete Product Error:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -282,7 +383,7 @@ exports.validateCartItems = async (req, res) => {
         productId: product._id,
         sizeId: size._id,
         name: product.name,
-        image: product.images.url,
+        image: product.images[0].url,
         size: size.size,
         price: size.price,
         stock: size.stock,

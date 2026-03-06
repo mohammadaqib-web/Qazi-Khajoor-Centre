@@ -116,7 +116,7 @@ const DatesMain = ({ name, id, products = [], loading }) => {
 
                     <CardMedia
                       component="img"
-                      image={product.images?.url}
+                      image={product.images[0]?.url}
                       alt={product.name}
                       className="product-image"
                       sx={{

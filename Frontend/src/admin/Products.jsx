@@ -31,13 +31,14 @@ const Products = () => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
-  const [preview, setPreview] = useState(null);
+  const [preview, setPreview] = useState([]);
+  const [deletedImages, setDeletedImages] = useState([]);
 
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     category: "",
-    image: null,
+    images: [],
     sizes: [{ size: "", price: "", stock: "" }],
   });
 
@@ -79,12 +80,24 @@ const Products = () => {
   // ---------------- FORM HANDLING ----------------
 
   const handleChange = (e) => {
-    if (e.target.name === "image") {
-      const file = e.target.files[0];
-      if (file) {
-        setFormData({ ...formData, image: file });
-        setPreview(URL.createObjectURL(file));
+    if (e.target.name === "images") {
+      const newFiles = Array.from(e.target.files);
+
+      if (preview.length + newFiles.length > 5) {
+        toast.error("Maximum 5 images allowed");
+        return;
       }
+
+      const updatedImages = [...formData.images, ...newFiles];
+
+      setFormData({
+        ...formData,
+        images: updatedImages,
+      });
+
+      const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
+
+      setPreview((prev) => [...prev, ...newPreviews]);
     } else {
       setFormData({ ...formData, [e.target.name]: e.target.value });
     }
@@ -108,29 +121,53 @@ const Products = () => {
     setFormData({ ...formData, sizes: updatedSizes });
   };
 
+  const removeImage = (index) => {
+    const image = preview[index];
+
+    if (typeof image === "string") {
+      setDeletedImages((prev) => [...prev, image]);
+    } else {
+      const updatedImages = formData.images.filter((_, i) => i !== index);
+
+      setFormData({
+        ...formData,
+        images: updatedImages,
+      });
+    }
+
+    const updatedPreview = preview.filter((_, i) => i !== index);
+    setPreview(updatedPreview);
+  };
+
   // ---------------- OPEN DIALOG ----------------
 
   const handleOpen = (product = null) => {
     if (product) {
       setEditingProduct(product);
+
       setFormData({
         name: product.name,
         description: product.description,
         category: product.category._id,
-        image: null,
+        images: [],
         sizes: product.sizes,
       });
-      setPreview(product.images?.url || null);
+
+      setDeletedImages([]);
+      setPreview(product.images?.map((img) => img.url) || []);
     } else {
       setEditingProduct(null);
+
       setFormData({
         name: "",
         description: "",
         category: "",
-        image: null,
+        images: [],
         sizes: [{ size: "", price: "", stock: "" }],
       });
-      setPreview(null);
+
+      setDeletedImages([]);
+      setPreview([]);
     }
     setOpen(true);
   };
@@ -146,8 +183,18 @@ const Products = () => {
 
       if (!formData.category) return toast.error("Category is required");
 
-      if (!editingProduct && !formData.image)
-        return toast.error("Image is required");
+      const remainingExistingImages = preview.filter(
+        (img) => !deletedImages.includes(img),
+      ).length;
+
+      const newImages = formData.images.length;
+
+      const totalImages = remainingExistingImages + newImages;
+
+      if (totalImages === 0) {
+        toast.error("Product must have at least 1 image");
+        return;
+      }
 
       for (let size of formData.sizes) {
         if (!size.size.trim()) return toast.error("Size is required");
@@ -163,10 +210,11 @@ const Products = () => {
       data.append("description", formData.description);
       data.append("category", formData.category);
       data.append("sizes", JSON.stringify(formData.sizes));
+      data.append("deletedImages", JSON.stringify(deletedImages));
 
-      if (formData.image) {
-        data.append("image", formData.image);
-      }
+      formData.images.forEach((file) => {
+        data.append("images", file);
+      });
 
       if (editingProduct) {
         await axios.put(
@@ -247,7 +295,7 @@ const Products = () => {
               <TableRow key={product._id}>
                 <TableCell>
                   <img
-                    src={product.images?.url}
+                    src={product.images?.[0]?.url}
                     alt={product.name}
                     width="50"
                     style={{ borderRadius: "6px" }}
@@ -334,23 +382,43 @@ const Products = () => {
               Upload Image
               <input
                 hidden
+                multiple
                 type="file"
-                name="image"
+                name="images"
                 accept="image/*"
                 onChange={handleChange}
               />
             </Button>
 
-            {preview && (
-              <Box mt={2}>
-                <img
-                  src={preview}
-                  alt="Preview"
-                  width="120"
-                  style={{ borderRadius: "8px" }}
-                />
-              </Box>
-            )}
+            <Box mt={2} display="flex" gap={2} flexWrap="wrap">
+              {preview.map((img, index) => (
+                <Box key={index} position="relative">
+                  <img
+                    src={img}
+                    alt="Preview"
+                    width="80"
+                    style={{ borderRadius: "6px" }}
+                  />
+
+                  <Button
+                    size="small"
+                    color="error"
+                    sx={{
+                      position: "absolute",
+                      top: -8,
+                      right: -8,
+                      minWidth: 20,
+                      height: 20,
+                      borderRadius: "50%",
+                      padding: 0,
+                    }}
+                    onClick={() => removeImage(index)}
+                  >
+                    ×
+                  </Button>
+                </Box>
+              ))}
+            </Box>
           </Box>
 
           {formData.sizes.map((sizeObj, index) => (
