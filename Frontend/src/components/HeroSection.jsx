@@ -16,14 +16,18 @@ const HeroSlider = () => {
       pagination={{
         clickable: true,
       }}
-      style={{ height: "65vh" }}
+      style={{ height: "auto" }}
     >
       {heroSlides.map((slide, index) => (
         <SwiperSlide key={index}>
           <Box
             sx={{
               position: "relative",
-              height: "65vh",
+              height: {
+                xs: "45vh",
+                sm: "55vh",
+                md: "65vh",
+              },
               overflow: "hidden",
               display: "flex",
               alignItems: "center",
