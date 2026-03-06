@@ -154,7 +154,7 @@ const SingleProduct = () => {
                       cursor: "pointer",
                       border:
                         selectedImage === img.url
-                          ? "2px solid rgba(0,0,0,0.7)"
+                          ? "1px solid #3B2416"
                           : "1px solid #ddd",
                       flexShrink: 0,
                     }}
