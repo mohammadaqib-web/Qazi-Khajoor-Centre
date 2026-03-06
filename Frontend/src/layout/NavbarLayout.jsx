@@ -4,6 +4,7 @@ import Footer from "../components/Footer";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import FloatingWhatsApp from "../components/WALogo";
+import FloatingCallButton from "../components/FloatingCallButton";
 
 const NavbarLayout = () => {
   const [categories, setCategories] = useState([]);
@@ -27,6 +28,7 @@ const NavbarLayout = () => {
     <>
       <Navbar categories={categories} setCategories={setCategories} />
       <Outlet context={{ categories }} />
+      <FloatingCallButton />
       <FloatingWhatsApp />
       <Footer categories={categories} setCategories={setCategories} />
     </>
